@@ -14,11 +14,14 @@
 
 A **production-grade web application** consisting of:
 
-1. **Client-Facing Form** (7-step progressive wizard)
+1. **Client-Facing Form** (8-step progressive wizard + landing/success pages)
+   - Landing page with plan comparison and introduction
    - Multi-step application form with conditional logic
-   - Tailwind CSS styling (responsive, mobile-first)
-   - Real-time validation and auto-save
-   - Target: Foreign applicants (visa/work permit holders) in Malaysia
+   - Tailwind CSS styling (responsive, mobile-first, Allianz brand colors)
+   - Real-time validation and auto-save to localStorage
+   - Document upload capability for ID verification
+   - Success confirmation page
+   - Target: Foreign applicants (visa/work permit/student holders) in Malaysia
 
 2. **REST API Backend** (Django + DRF)
    - Form submission endpoints
@@ -225,20 +228,24 @@ brightbeam-allianz/
 │
 ├── 📁 frontend/                      # Frontend templates & CSS
 │   ├── templates/
-│   │   ├── base.html                 # Base template (Tailwind CSS link)
-│   │   ├── index.html                # Landing page
-│   │   ├── form.html                 # 7-step form container
-│   │   ├── confirmation.html         # Post-submission confirmation
+│   │   ├── base.html                 # Base template (Tailwind CSS link, Allianz branding)
+│   │   ├── index.html                # Landing page with plan comparison
+│   │   ├── form.html                 # 8-step form container with progress bar & step indicators
+│   │   ├── confirmation.html         # Post-submission success page
 │   │   ├── dashboard.html            # Admin dashboard container
 │   │   ├── error.html                # Error pages (404, 500)
 │   │   └── components/               # Reusable form step components
-│   │       ├── step1_plan.html       # Plan selection
-│   │       ├── step2_id.html         # Identification & personal
-│   │       ├── step3_contact.html    # Contact & address
-│   │       ├── step4_coverage.html   # Coverage & add-ons
-│   │       ├── step5_beneficiary.html # Beneficiary info
-│   │       ├── step6_payment.html    # Payment & declaration
-│   │       └── step7_review.html     # Review & submit
+│   │       ├── landing_page.html     # Plan comparison, introduction, start button
+│   │       ├── step1_plan.html       # Plan selection (Plan 5/6/7 with pricing)
+│   │       ├── step2_personal.html   # Personal info (full name, preferred name, DOB, gender, marital status)
+│   │       ├── step3_identity.html   # ID & visa (ID type, number, expiry, country, document upload)
+│   │       ├── step4_contact.html    # Contact & address (phone, email, address, city, state, postcode, country)
+│   │       ├── step5_occupation.html # Occupation & industry (occupation, industry, employer, work environment)
+│   │       ├── step6_student.html    # Student info (CONDITIONAL: university, course, graduation date)
+│   │       ├── step7_benefits.html   # Coverage add-ons (Lifestyle, Study Interruption, Family Cover, Traveler)
+│   │       ├── step8_payment.html    # Payment method & declaration (method, PDPA consent, T&Cs)
+│   │       ├── step9_review.html     # Review & submit (summary with masked sensitive fields)
+│   │       └── success_page.html     # Post-submission confirmation with reference number
 │   │
 │   └── css/
 │       └── input.css                 # Source Tailwind directives

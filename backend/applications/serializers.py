@@ -48,47 +48,109 @@ class ApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
         fields = [
+            # Core identifiers
             'id',
+            'application_number',
+            
+            # Plan selection
             'plan',
+            'coverage_addons',
+            'calculated_premium',
+            'total_annual_premium',
+            
+            # Personal information
             'full_name',
+            'preferred_name',
             'email',
-            'phone_number',
             'phone_country_code',
-            'id_type',
-            'id_number',
-            'nationality',
+            'phone_number',
+            'contact_preference',
+            
+            # Demographics
             'date_of_birth',
             'gender',
+            'marital_status',
+            
+            # Nationality & residency
+            'nationality',
+            'country_of_residence',
+            
+            # Identification & Visa
+            'id_type',
+            'id_number',
+            'id_expiry_date',
+            'id_issuing_country',
+            'visa_type',
+            'visa_expiry_date',
+            'visa_number',
+            
+            # Address
             'address_line_1',
             'address_line_2',
             'city',
+            'state_province',
             'postcode',
             'country',
+            
+            # Occupation
             'occupation',
+            'industry',
             'employer_name',
-            'coverage_addons',
-            'calculated_premium',
+            'work_environment',
+            
+            # Student status (conditional)
+            'is_student',
+            'university_name',
+            'course_of_study',
+            'field_of_study',
+            'university_country',
+            'expected_graduation',
+            
+            # Beneficiary
             'beneficiary_name',
             'beneficiary_relationship',
             'beneficiary_phone',
+            'secondary_beneficiary_name',
+            'secondary_beneficiary_relationship',
+            'beneficiaries',
+            
+            # Payment
+            'preferred_payment_method',
+            'payment',
+            
+            # Status & Compliance
             'status',
             'pdpa_consent',
+            'pdpa_consent_timestamp',
             'terms_accepted',
-            'beneficiaries',
-            'payment',
-            'notifications',
+            'terms_accepted_timestamp',
+            'marketing_opt_in',
+            'data_retention_expiry',
+            
+            # Metadata
             'created_at',
+            'updated_at',
             'submitted_at',
+            'ip_address',
+            'last_reviewed_by',
+            'review_notes',
+            
+            # Related
+            'notifications',
         ]
         read_only_fields = [
             'id',
+            'application_number',
             'status',
             'calculated_premium',
+            'total_annual_premium',
             'created_at',
+            'updated_at',
             'submitted_at',
             'beneficiaries',
             'payment',
             'notifications',
+            'data_retention_expiry',
         ]
     
     def validate_email(self, value):

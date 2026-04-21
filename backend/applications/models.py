@@ -12,27 +12,32 @@ class Application(models.Model):
     """
     Core application model for insurance form submissions.
     Stores all user-submitted data with encryption for sensitive fields.
+    Enhanced for international applicants with comprehensive data fields.
     """
     
     STATUS_CHOICES = [
         ('draft', 'Draft'),
         ('submitted', 'Submitted'),
+        ('under_review', 'Under Review'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
         ('archived', 'Archived'),
     ]
     
     PLAN_CHOICES = [
-        ('basic', 'Basic Shield'),
-        ('plus', 'Shield Plus'),
-        ('premium', 'Premium Shield'),
+        ('plan_5', 'Plan 5 (RM360,000)'),
+        ('plan_6', 'Plan 6 (RM600,000)'),
+        ('plan_7', 'Plan 7 (RM900,000)'),
     ]
     
     ID_TYPE_CHOICES = [
         ('passport', 'Passport'),
-        ('visa', 'Visa'),
+        ('residence_permit', 'Residence Permit'),
+        ('work_permit', 'Work Permit'),
+        ('student_pass', 'Student Pass'),
         ('employment_pass', 'Employment Pass'),
         ('national_id', 'National ID'),
+        ('other', 'Other'),
     ]
     
     GENDER_CHOICES = [
@@ -41,60 +46,156 @@ class Application(models.Model):
         ('O', 'Other'),
     ]
     
+    MARITAL_STATUS_CHOICES = [
+        ('single', 'Single'),
+        ('married', 'Married'),
+        ('divorced', 'Divorced'),
+        ('widowed', 'Widowed'),
+        ('other', 'Other'),
+    ]
+    
+    INDUSTRY_CHOICES = [
+        ('technology', 'Technology'),
+        ('finance', 'Finance & Banking'),
+        ('education', 'Education'),
+        ('healthcare', 'Healthcare'),
+        ('manufacturing', 'Manufacturing'),
+        ('retail', 'Retail'),
+        ('hospitality', 'Hospitality & Tourism'),
+        ('construction', 'Construction'),
+        ('student', 'Student'),
+        ('other', 'Other'),
+    ]
+    
+    WORK_ENVIRONMENT_CHOICES = [
+        ('office', 'Office-based'),
+        ('outdoor', 'Outdoor/Field Work'),
+        ('construction', 'Construction Site'),
+        ('driving', 'Driving/Transportation'),
+        ('student', 'Student'),
+        ('other', 'Other'),
+    ]
+    
+    VISA_TYPE_CHOICES = [
+        ('tourist', 'Tourist Visa'),
+        ('business', 'Business Visa'),
+        ('work', 'Work Visa'),
+        ('student', 'Student Visa'),
+        ('family', 'Family Visa'),
+        ('residence', 'Residence Permit'),
+        ('mm2h', 'MM2H (Malaysia My Second Home)'),
+        ('other', 'Other'),
+    ]
+    
+    CONTACT_PREFERENCE_CHOICES = [
+        ('email', 'Email'),
+        ('sms', 'SMS'),
+        ('phone', 'Phone Call'),
+        ('both', 'Both Email & SMS'),
+    ]
+    
     # Primary key
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     
-    # Plan selection
+    # ============ PLAN SELECTION ============
     plan = models.CharField(max_length=20, choices=PLAN_CHOICES)
     
-    # Personal information
-    full_name = models.CharField(max_length=255)
+    # ============ PERSONAL INFORMATION ============
+    full_name = models.CharField(max_length=255, help_text="Full name as per identification document")
+    preferred_name = models.CharField(max_length=255, blank=True, help_text="Preferred name for communication")
     email = models.EmailField(unique=True, validators=[EmailValidator()])
-    phone_number = models.CharField(max_length=20)
-    phone_country_code = models.CharField(max_length=5, default='+60')  # Malaysia default
     
-    # Identification
-    id_type = models.CharField(max_length=20, choices=ID_TYPE_CHOICES)
-    id_number = models.CharField(max_length=255)  # Will be encrypted
+    # Contact
+    phone_country_code = models.CharField(max_length=5, default='+60')  # Malaysia default
+    phone_number = models.CharField(max_length=20)
+    contact_preference = models.CharField(max_length=10, choices=CONTACT_PREFERENCE_CHOICES, default='email')
     
     # Demographics
-    nationality = models.CharField(max_length=100)
     date_of_birth = models.DateField()
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
+    marital_status = models.CharField(max_length=20, choices=MARITAL_STATUS_CHOICES, blank=True)
     
-    # Address
+    # ============ NATIONALITY & RESIDENCY (International) ============
+    nationality = models.CharField(max_length=100, help_text="Country of citizenship")
+    country_of_residence = models.CharField(max_length=100, default='Malaysia')
+    
+    # ============ IDENTIFICATION & VISA ============
+    id_type = models.CharField(max_length=30, choices=ID_TYPE_CHOICES)
+    id_number = models.CharField(max_length=255, help_text="Identification number (encrypted)")
+    id_expiry_date = models.DateField(null=True, blank=True, help_text="ID/Passport expiration date")
+    id_issuing_country = models.CharField(max_length=100, blank=True)
+    
+    # Visa Information (for international applicants)
+    visa_type = models.CharField(max_length=30, choices=VISA_TYPE_CHOICES, blank=True)
+    visa_expiry_date = models.DateField(null=True, blank=True, help_text="Visa/Work permit expiration date")
+    visa_number = models.CharField(max_length=100, blank=True)
+    
+    # ============ ADDRESS ============
     address_line_1 = models.CharField(max_length=255)
     address_line_2 = models.CharField(max_length=255, blank=True)
     city = models.CharField(max_length=100)
+    state_province = models.CharField(max_length=100, blank=True, help_text="State/Province (required for some countries)")
     postcode = models.CharField(max_length=10)
     country = models.CharField(max_length=100, default='Malaysia')
     
-    # Employment
+    # ============ EMPLOYMENT & OCCUPATION ============
     occupation = models.CharField(max_length=255)
-    employer_name = models.CharField(max_length=255, blank=True)
+    industry = models.CharField(max_length=30, choices=INDUSTRY_CHOICES, blank=True)
+    employer_name = models.CharField(max_length=255, blank=True, help_text="Company, institution, or self-employed")
+    work_environment = models.CharField(max_length=30, choices=WORK_ENVIRONMENT_CHOICES, blank=True)
     
-    # Insurance details
-    coverage_addons = models.JSONField(default=dict, blank=True)  # JSON of selected add-ons
+    # ============ STUDENT STATUS (Conditional) ============
+    is_student = models.BooleanField(default=False, help_text="Whether applicant is currently a student")
+    university_name = models.CharField(max_length=255, blank=True)
+    course_of_study = models.CharField(max_length=255, blank=True)
+    field_of_study = models.CharField(max_length=100, blank=True)
+    university_country = models.CharField(max_length=100, blank=True, help_text="Country where studying")
+    expected_graduation = models.DateField(null=True, blank=True)
+    
+    # ============ INSURANCE DETAILS ============
+    plan = models.CharField(max_length=20, choices=PLAN_CHOICES)
+    coverage_addons = models.JSONField(default=dict, blank=True, help_text="JSON of selected add-ons with prices")
     calculated_premium = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_annual_premium = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     
-    # Beneficiary
+    # ============ BENEFICIARY INFORMATION ============
     beneficiary_name = models.CharField(max_length=255, blank=True)
     beneficiary_relationship = models.CharField(max_length=100, blank=True)
     beneficiary_phone = models.CharField(max_length=20, blank=True)
+    secondary_beneficiary_name = models.CharField(max_length=255, blank=True)
+    secondary_beneficiary_relationship = models.CharField(max_length=100, blank=True)
     
-    # Payment & Status
+    # ============ PAYMENT INFORMATION ============
+    preferred_payment_method = models.CharField(max_length=30, blank=True, help_text="Preferred payment method")
+    
+    # ============ COMPLIANCE & STATUS ============
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='submitted')
     
-    # Compliance
-    pdpa_consent = models.BooleanField(default=False)  # IMPORTANT: Not pre-checked
-    terms_accepted = models.BooleanField(default=False)
-    data_retention_expiry = models.DateField(null=True, blank=True)  # 7 years from submission
+    # PDPA Consent (IMPORTANT: Not pre-checked in frontend)
+    pdpa_consent = models.BooleanField(default=False, help_text="Explicit PDPA consent - MUST be false by default")
+    pdpa_consent_timestamp = models.DateTimeField(null=True, blank=True)
     
-    # Metadata
+    # Terms & Conditions
+    terms_accepted = models.BooleanField(default=False)
+    terms_accepted_timestamp = models.DateTimeField(null=True, blank=True)
+    
+    # Marketing/Communication
+    marketing_opt_in = models.BooleanField(default=False)
+    
+    # Data retention
+    data_retention_expiry = models.DateField(null=True, blank=True, help_text="Auto-delete date (7 years from submission)")
+    
+    # ============ METADATA & TRACKING ============
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     submitted_at = models.DateTimeField(null=True, blank=True)
-    ip_address = models.CharField(max_length=45, blank=True)  # IPv4 or IPv6
+    ip_address = models.CharField(max_length=45, blank=True, help_text="IPv4 or IPv6 at submission")
+    user_agent = models.TextField(blank=True, help_text="Browser/device information")
+    
+    # Application tracking
+    application_number = models.CharField(max_length=50, unique=True, blank=True, help_text="User-friendly reference number")
+    last_reviewed_by = models.CharField(max_length=255, blank=True)
+    review_notes = models.TextField(blank=True, help_text="Internal admin notes")
     
     class Meta:
         ordering = ['-created_at']
