@@ -1,0 +1,24 @@
+{
+  "name": "brightbeam-allianz-shield-plus",
+  "version": "1.0.0",
+  "description": "Digital Application Portal for Allianz Shield Plus Insurance",
+  "main": "backend/config/wsgi.py",
+  "scripts": {
+    "build": "tailwindcss -i frontend/css/input.css -o backend/static/css/output.css",
+    "watch": "tailwindcss -i frontend/css/input.css -o backend/static/css/output.css --watch",
+    "dev": "npm run watch & python manage.py runserver"
+  },
+  "keywords": [
+    "insurance",
+    "django",
+    "tailwind",
+    "form"
+  ],
+  "author": "Brightbeam",
+  "license": "MIT",
+  "devDependencies": {
+    "tailwindcss": "^3.3.0",
+    "postcss": "^8.4.24",
+    "autoprefixer": "^10.4.14"
+  }
+}

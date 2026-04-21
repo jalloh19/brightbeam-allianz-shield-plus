@@ -1,0 +1,22 @@
+# Core Django
+Django==4.2.0
+djangorestframework==3.14.0
+
+# Database
+psycopg2-binary>=2.9.0
+
+# Production Server
+gunicorn>=20.1.0
+
+# Environment Variables
+python-dotenv>=1.0.0
+
+# Security & Encryption
+cryptography>=40.0.0
+
+# CORS
+django-cors-headers>=3.14.0
+
+# Utilities
+requests>=2.31.0
+Pillow>=9.5.0
