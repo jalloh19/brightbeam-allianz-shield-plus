@@ -134,11 +134,8 @@ def get_analytics(request):
         'approved_applications': approved_count,
         'conversion_rate': round(conversion_rate, 2),
         'status_breakdown': status_breakdown_map,
-        'status_breakdown_rows': status_rows,
         'plan_distribution': plan_distribution_map,
-        'plan_distribution_rows': plan_rows,
         'applicant_distribution': applicant_distribution_map,
-        'applicant_distribution_rows': applicant_rows,
     }
     
     return Response(analytics_data, status=status.HTTP_200_OK)
