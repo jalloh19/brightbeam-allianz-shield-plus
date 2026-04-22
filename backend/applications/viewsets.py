@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.db.models import Q
 from .models import Application, AuditLog, PaymentRecord, Beneficiary, NotificationLog
 from .serializers import ApplicationSerializer, ApplicationListSerializer, AuditLogSerializer
+from backend.utils.email_service import get_email_service
 
 
 class ApplicationPagination(PageNumberPagination):
@@ -57,6 +58,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         """
         Handle form submission (POST /api/applications/).
         Records submission timestamp and IP address.
+        Sends confirmation email to applicant.
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -73,6 +75,41 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             user='anonymous' if request.user.is_anonymous else request.user.username,
             ip_address=self.get_client_ip(request),
         )
+        
+        # Send confirmation email
+        try:
+            email_service = get_email_service()
+            result = email_service.send_confirmation_email(
+                recipient=application.email,
+                full_name=application.full_name,
+                application_number=application.application_number
+            )
+            
+            # Create notification log for confirmation email
+            NotificationLog.objects.create(
+                application=application,
+                type='confirmation',
+                recipient=application.email,
+                channel='email',
+                subject='Your Application Has Been Received',
+                status='sent' if result['success'] else 'failed',
+                message='Confirmation email sent successfully' if result['success'] else result.get('error', 'Unknown error'),
+            )
+        except Exception as e:
+            # Log error but don't fail the request
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to send confirmation email for application {application.id}: {str(e)}")
+            
+            NotificationLog.objects.create(
+                application=application,
+                type='confirmation',
+                recipient=application.email,
+                channel='email',
+                subject='Your Application Has Been Received',
+                status='failed',
+                error_message=str(e),
+            )
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -145,7 +182,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
     def approve(self, request, id=None):
         """
         Approve an application (admin only).
-        Updates status and logs the action.
+        Updates status, logs the action, and sends approval email.
         """
         application = self.get_object()
         application.status = 'approved'
@@ -159,15 +196,41 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             ip_address=self.get_client_ip(request),
         )
         
-        # Create approval notification
-        NotificationLog.objects.create(
-            application=application,
-            type='approved',
-            recipient=application.email,
-            channel='email',
-            subject='Your Application Has Been Approved',
-            status='pending',
-        )
+        # Send approval email
+        try:
+            email_service = get_email_service()
+            result = email_service.send_approval_email(
+                recipient=application.email,
+                full_name=application.full_name,
+                application_number=application.application_number,
+                premium=float(application.calculated_premium or 0)
+            )
+            
+            # Create approval notification
+            NotificationLog.objects.create(
+                application=application,
+                type='approved',
+                recipient=application.email,
+                channel='email',
+                subject='Your Application Has Been Approved',
+                status='sent' if result['success'] else 'failed',
+                message='Approval email sent successfully' if result['success'] else result.get('error', 'Unknown error'),
+            )
+        except Exception as e:
+            # Log error but don't fail the request
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to send approval email for application {application.id}: {str(e)}")
+            
+            NotificationLog.objects.create(
+                application=application,
+                type='approved',
+                recipient=application.email,
+                channel='email',
+                subject='Your Application Has Been Approved',
+                status='failed',
+                error_message=str(e),
+            )
         
         serializer = self.get_serializer(application)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -177,6 +240,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         """
         Reject an application (admin only).
         Requires rejection reason in request body.
+        Sends rejection notification email.
         """
         application = self.get_object()
         reason = request.data.get('reason', 'No reason provided')
@@ -194,16 +258,43 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             ip_address=self.get_client_ip(request),
         )
         
-        # Create rejection notification
-        NotificationLog.objects.create(
-            application=application,
-            type='rejected',
-            recipient=application.email,
-            channel='email',
-            subject='Your Application Status',
-            message=f'Unfortunately, your application was not approved. Reason: {reason}',
-            status='pending',
-        )
+        # Send rejection email
+        try:
+            email_service = get_email_service()
+            result = email_service.send_rejection_email(
+                recipient=application.email,
+                full_name=application.full_name,
+                application_number=application.application_number,
+                reason=reason
+            )
+            
+            # Create rejection notification
+            NotificationLog.objects.create(
+                application=application,
+                type='rejected',
+                recipient=application.email,
+                channel='email',
+                subject='Your Application Status',
+                message=reason,
+                status='sent' if result['success'] else 'failed',
+                error_message=result.get('error') if not result['success'] else None,
+            )
+        except Exception as e:
+            # Log error but don't fail the request
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to send rejection email for application {application.id}: {str(e)}")
+            
+            NotificationLog.objects.create(
+                application=application,
+                type='rejected',
+                recipient=application.email,
+                channel='email',
+                subject='Your Application Status',
+                message=reason,
+                status='failed',
+                error_message=str(e),
+            )
         
         serializer = self.get_serializer(application)
         return Response(serializer.data, status=status.HTTP_200_OK)
