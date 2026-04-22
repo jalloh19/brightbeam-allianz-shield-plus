@@ -57,38 +57,39 @@ function refreshAnalyticsData() {
 
 function updateKPICards(data) {
   console.log('Updating KPI cards with data:', data);
-  // Extract counts safely from status_breakdown or fallback fields
+  
+  // Extract counts safely using a normalized map
   const breakdown = data.status_breakdown || {};
+  const b = {};
+  Object.keys(breakdown).forEach(k => {
+    b[k.toLowerCase()] = breakdown[k];
+  });
   
-  const approved = breakdown.approved || data.approved_applications || 0;
-  const rejected = breakdown.rejected || 0;
-  const pending = (breakdown.submitted || 0) + (breakdown.under_review || 0);
-  const drafts = breakdown.draft || 0;
+  const approved = b.approved || data.approved_applications || 0;
+  const rejected = b.rejected || 0;
+  const pending = (b.submitted || 0) + (b.under_review || 0);
+  const drafts = b.draft || 0;
   
-  console.log('Parsed counts - Approved:', approved, 'Rejected:', rejected, 'Pending:', pending);
+  console.log('Parsed Counts -> Approved:', approved, 'Rejected:', rejected, 'Pending:', pending);
   
   // Logical Consistency: Total = Approved + Rejected + Pending + Drafts
-  // The backend 'total_applications' should match this sum
   const calculatedTotal = approved + rejected + pending + drafts;
   const displayTotal = Math.max(data.total_applications || 0, calculatedTotal);
 
-  // Total Applications
-  const elTotal = document.getElementById('kpi_total_applications');
-  if (elTotal) elTotal.textContent = displayTotal.toLocaleString();
+  // Update DOM elements with fallback checks
+  const updateEl = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.textContent = Number(val).toLocaleString();
+    }
+  };
 
-  // Total Approved
-  const elApproved = document.getElementById('kpi_total_approved');
-  if (elApproved) elApproved.textContent = approved.toLocaleString();
+  updateEl('kpi_total_applications', displayTotal);
+  updateEl('kpi_total_approved', approved);
+  updateEl('kpi_pending_review', pending);
+  updateEl('kpi_total_rejected', rejected);
 
-  // Pending Review (Submitted + Under Review)
-  const elPending = document.getElementById('kpi_pending_review');
-  if (elPending) elPending.textContent = pending.toLocaleString();
-
-  // Total Rejected
-  const elRejected = document.getElementById('kpi_total_rejected');
-  if (elRejected) elRejected.textContent = rejected.toLocaleString();
-
-  console.log('KPI cards updated. Total displayed:', displayTotal);
+  console.log('KPI cards updated successfully. Total displayed:', displayTotal);
 }
 
 // Expose for other pages (and debugging)
