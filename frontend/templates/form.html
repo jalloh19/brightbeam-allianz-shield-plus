@@ -745,37 +745,6 @@
     </div>
 </div>
 
-<!-- Styles for step indicators -->
-<style>
-    .step-indicator {
-        @apply flex flex-col items-center gap-1 p-2 rounded-lg cursor-pointer transition-all;
-    }
-    
-    .step-indicator:hover {
-        @apply bg-gray-200;
-    }
-    
-    .step-indicator.active .step-number {
-        @apply bg-blue-600 text-white;
-    }
-    
-    .step-indicator.completed .step-number {
-        @apply bg-green-600 text-white;
-    }
-    
-    .step-number {
-        @apply w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm bg-gray-300 text-gray-700;
-    }
-    
-    .step-label {
-        @apply text-xs font-semibold text-gray-700 text-center;
-    }
-    
-    .form-step {
-        @apply mb-6;
-    }
-</style>
-
 <!-- Main Form Engine Script -->
 <script src="{% static 'js/form-engine.js' %}"></script>
 <script src="{% static 'js/field-visibility.js' %}"></script>

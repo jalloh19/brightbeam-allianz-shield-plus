@@ -361,7 +361,11 @@ function updateLastRefreshTime() {
 // Export function for CSV
 function exportAnalytics() {
   if (!analyticsData) {
-    alert('Data not loaded yet. Please try again.');
+    if (typeof window.showAppNotice === 'function') {
+      window.showAppNotice('Data not loaded yet. Please try again.', 'warning');
+    } else {
+      console.warn('Data not loaded yet. Please try again.');
+    }
     return;
   }
 

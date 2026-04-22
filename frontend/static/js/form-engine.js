@@ -6,6 +6,14 @@
 let currentStep = 1;
 const totalSteps = 9;
 
+function notifyForm(message, type = "error") {
+    if (typeof window.showAppNotice === "function") {
+        window.showAppNotice(message, type);
+        return;
+    }
+    console[type === "error" ? "error" : "log"](message);
+}
+
 // Initialize form on page load
 function initializeForm() {
     loadFormState();
@@ -33,7 +41,7 @@ function attachEventListeners() {
 function nextStep() {
     // Validate current step
     if (!validateStep(currentStep)) {
-        alert('Please fill in all required fields correctly before proceeding.');
+        notifyForm('Please fill in all required fields correctly before proceeding.', 'warning');
         return;
     }
     
@@ -411,7 +419,7 @@ function submitForm(event) {
     event.preventDefault();
     
     if (!validateStep(totalSteps)) {
-        alert('Please complete all required fields');
+        notifyForm('Please complete all required fields.', 'warning');
         return;
     }
     
@@ -495,7 +503,7 @@ function submitForm(event) {
         console.error('Error:', error);
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
-        alert('Error submitting application. Please try again.');
+        notifyForm('Error submitting application. Please try again.', 'error');
     });
 }
 
