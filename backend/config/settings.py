@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -120,6 +121,16 @@ STATIC_ROOT = BASE_DIR / 'backend' / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'backend' / 'static',
 ]
+
+# Serve static files directly from Django/Gunicorn in production.
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
+    },
+}
 
 # Media files (User uploads)
 MEDIA_URL = '/media/'
