@@ -66,6 +66,9 @@ window.formState = {
     addons: [],
     premium: 0,
     
+    // Payment
+    preferred_payment_method: '',
+    
     // Declaration
     accuracy_confirmation: false,
     pdpa_consent: false,
@@ -285,6 +288,7 @@ function getDefaultFormState() {
         expected_graduation: '',
         intended_duration_months: '',
         on_campus_residential: '',
+        preferred_payment_method: '',
         plan: 'plan_6',
         addons: [],
         premium: 0,
@@ -326,11 +330,25 @@ function getFormSubmissionData() {
         postcode: state.postcode,
         country: state.country,
         plan: state.plan,
-        coverage_addons: JSON.stringify(state.addons),
+        coverage_addons: {}, // Will populate below
+        preferred_payment_method: state.preferred_payment_method || '',
         pdpa_consent: state.pdpa_consent,
         terms_accepted: state.terms_accepted,
         marketing_opt_in: state.marketing_opt_in
     };
+    
+    // Map addons array to coverage_addons dict with costs
+    if (state.addons && Array.isArray(state.addons)) {
+        const costs = {
+            'employment_protection': 50, 'occupational_injury': 35,
+            'professional_liability': 40, 'family_coverage': 80,
+            'study_interruption': 50, 'education_protection': 40,
+            'family_emergency': 35, 'scholarship_protection': 60
+        };
+        state.addons.forEach(addon => {
+            if (costs[addon]) data.coverage_addons[addon] = costs[addon];
+        });
+    }
     
     // Add worker fields if applicable
     if (state.applicant_type === 'worker') {

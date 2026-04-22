@@ -453,12 +453,16 @@ function submitForm(event) {
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="spinner"></span> Submitting...';
     
-    const state = { ...window.formState };
-    if (state.addons && Array.isArray(state.addons)) {
-        state.coverage_addons = {};
-        const costs = { 'employment_protection': 50, 'occupational_injury': 35, 'professional_liability': 40, 'family_coverage': 80, 'study_interruption': 50, 'education_protection': 40, 'family_emergency': 35, 'scholarship_protection': 60 };
-        state.addons.forEach(a => { if (costs[a]) state.coverage_addons[a] = costs[a]; });
-    }
+    // Prepare form data using centralized state manager
+    const data = getFormSubmissionData();
+    
+    // Ensure numeric fields are correctly typed
+    data.monthly_salary = data.monthly_salary ? parseFloat(data.monthly_salary) : 0;
+    data.intended_duration_months = data.intended_duration_months ? parseInt(data.intended_duration_months) : 0;
+    data.years_of_experience = data.years_of_experience ? parseInt(data.years_of_experience) : 0;
+    
+    // Final check for student flag
+    data.is_student = (data.applicant_type === 'student');
     
     // Submit via AJAX
     fetch('/api/applications/', {
@@ -467,7 +471,7 @@ function submitForm(event) {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCookie('csrftoken')
         },
-        body: JSON.stringify(state),
+        body: JSON.stringify(data),
     })
     .then(response => {
         if (!response.ok) {
