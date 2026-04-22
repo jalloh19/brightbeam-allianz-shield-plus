@@ -23,6 +23,3 @@ Pillow>=9.5.0
 
 # PDF Generation
 reportlab>=4.0.0
-
-# File Storage & CDN
-uploadcare>=5.0.0
