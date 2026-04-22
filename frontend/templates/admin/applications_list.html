@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Applications - Admin Panel - Allianz Shield Plus{% endblock %}
+
+{% block extra_css %}
+<style>
+  .status-badge {
+    @apply inline-block px-3 py-1 rounded-full text-xs font-semibold;
+  }
+  .status-draft { @apply bg-gray-100 text-gray-800; }
+  .status-submitted { @apply bg-blue-100 text-blue-800; }
+  .status-under_review { @apply bg-yellow-100 text-yellow-800; }
+  .status-approved { @apply bg-green-100 text-green-800; }
+  .status-rejected { @apply bg-red-100 text-red-800; }
+  .status-archived { @apply bg-gray-200 text-gray-600; }
+  
+  .plan-badge {
+    @apply inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-blue-900 to-blue-800 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 class="text-3xl font-bold">Applications</h1>
+      <p class="text-blue-100 mt-2">Manage insurance applications</p>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Filter Section -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Status Filter -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+          <select id="filter_status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <option value="">All Statuses</option>
+            <option value="draft">Draft</option>
+            <option value="submitted">Submitted</option>
+            <option value="under_review">Under Review</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+
+        <!-- Plan Filter -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Plan</label>
+          <select id="filter_plan" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <option value="">All Plans</option>
+            <option value="plan_5">Plan 5 (RM360K)</option>
+            <option value="plan_6">Plan 6 (RM600K)</option>
+            <option value="plan_7">Plan 7 (RM900K)</option>
+          </select>
+        </div>
+
+        <!-- Applicant Type Filter -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Applicant Type</label>
+          <select id="filter_applicant_type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <option value="">All Types</option>
+            <option value="worker">Worker</option>
+            <option value="student">Student</option>
+          </select>
+        </div>
+
+        <!-- Search -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+          <input type="text" id="filter_search" placeholder="Name or email..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+      </div>
+
+      <!-- Date Range -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+          <input type="date" id="filter_date_from" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+          <input type="date" id="filter_date_to" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+      </div>
+
+      <!-- Filter Buttons -->
+      <div class="mt-4 flex space-x-2">
+        <button onclick="applyFilters()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+          Apply Filters
+        </button>
+        <button onclick="clearFilters()" class="px-6 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 font-medium">
+          Clear All
+        </button>
+        <button onclick="exportData()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
+          Export CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- Results Counter and Sorting -->
+    <div class="flex justify-between items-center mb-4">
+      <div class="text-sm text-gray-600">
+        Showing <span id="result_count">0</span> applications
+      </div>
+      <div>
+        <label class="text-sm font-medium text-gray-700 mr-2">Sort by:</label>
+        <select id="sort_by" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <option value="-submitted_at">Newest First</option>
+          <option value="submitted_at">Oldest First</option>
+          <option value="full_name">Name (A-Z)</option>
+          <option value="-full_name">Name (Z-A)</option>
+          <option value="status">Status</option>
+          <option value="-calculated_premium">Premium (High-Low)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Applications Table -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-100 border-b border-gray-300">
+            <tr>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Application #</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Applicant Name</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Email</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Type</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Plan</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Premium</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Status</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Submitted</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="applications_tbody">
+            <tr class="border-b">
+              <td class="px-6 py-4 text-center text-gray-500" colspan="9">Loading applications...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="bg-gray-50 px-6 py-4 border-t border-gray-300 flex justify-between items-center">
+        <div class="text-sm text-gray-600">
+          Page <span id="current_page">1</span> of <span id="total_pages">0</span>
+        </div>
+        <div class="flex space-x-2">
+          <button onclick="previousPage()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 disabled:opacity-50" id="btn_prev">
+            ← Previous
+          </button>
+          <button onclick="nextPage()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" id="btn_next">
+            Next →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Results Message -->
+    <div id="no_results" class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mt-8 hidden">
+      <p class="text-yellow-800">No applications found matching your criteria. Try adjusting your filters.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Action Modal -->
+<div id="actionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+    <h3 id="modal_title" class="text-lg font-semibold text-gray-900 mb-4">Action</h3>
+    <p id="modal_message" class="text-gray-600 mb-6"></p>
+    <textarea id="modal_notes" placeholder="Add notes (optional)..." class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 h-24 resize-none"></textarea>
+    <div class="flex space-x-2">
+      <button onclick="confirmAction()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+        Confirm
+      </button>
+      <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 font-medium">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let currentPage = 1;
+  let totalPages = 0;
+  let totalCount = 0;
+  let currentFilters = {};
+  let actionContext = {};
+
+  function applyFilters() {
+    currentFilters = {
+      status: document.getElementById('filter_status').value,
+      plan: document.getElementById('filter_plan').value,
+      applicant_type: document.getElementById('filter_applicant_type').value,
+      search: document.getElementById('filter_search').value,
+      date_from: document.getElementById('filter_date_from').value,
+      date_to: document.getElementById('filter_date_to').value,
+      ordering: document.getElementById('sort_by').value
+    };
+    currentPage = 1;
+    loadApplications();
+  }
+
+  function clearFilters() {
+    document.getElementById('filter_status').value = '';
+    document.getElementById('filter_plan').value = '';
+    document.getElementById('filter_applicant_type').value = '';
+    document.getElementById('filter_search').value = '';
+    document.getElementById('filter_date_from').value = '';
+    document.getElementById('filter_date_to').value = '';
+    document.getElementById('sort_by').value = '-submitted_at';
+    currentFilters = {};
+    currentPage = 1;
+    loadApplications();
+  }
+
+  function loadApplications() {
+    let url = `/api/admin/applications/?page=${currentPage}`;
+    
+    if (currentFilters.status) url += `&status=${currentFilters.status}`;
+    if (currentFilters.plan) url += `&plan=${currentFilters.plan}`;
+    if (currentFilters.applicant_type) url += `&applicant_type=${currentFilters.applicant_type}`;
+    if (currentFilters.search) url += `&search=${encodeURIComponent(currentFilters.search)}`;
+    if (currentFilters.ordering) url += `&ordering=${currentFilters.ordering}`;
+
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        displayApplications(data.results);
+        totalPages = Math.ceil(data.count / 20);
+        totalCount = data.count;
+        
+        document.getElementById('result_count').textContent = totalCount;
+        document.getElementById('current_page').textContent = currentPage;
+        document.getElementById('total_pages').textContent = totalPages;
+        
+        document.getElementById('btn_prev').disabled = currentPage === 1;
+        document.getElementById('btn_next').disabled = currentPage === totalPages;
+        
+        if (totalCount === 0) {
+          document.getElementById('no_results').classList.remove('hidden');
+          document.getElementById('applications_tbody').innerHTML = '<tr><td class="px-6 py-4 text-center text-gray-500" colspan="9">No applications found.</td></tr>';
+        } else {
+          document.getElementById('no_results').classList.add('hidden');
+        }
+      })
+      .catch(error => {
+        console.error('Error loading applications:', error);
+        alert('Error loading applications. Please try again.');
+      });
+  }
+
+  function displayApplications(applications) {
+    const tbody = document.getElementById('applications_tbody');
+    tbody.innerHTML = '';
+
+    applications.forEach(app => {
+      const row = document.createElement('tr');
+      row.className = 'border-b hover:bg-gray-50';
+      
+      const statusClass = `status-${app.status}`;
+      const submittedDate = new Date(app.submitted_at).toLocaleDateString('en-MY', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      row.innerHTML = `
+        <td class="px-6 py-4 text-sm font-medium text-gray-900">
+          <a href="/admin/applications/${app.id}/" class="text-blue-600 hover:text-blue-800">
+            ${app.application_number}
+          </a>
+        </td>
+        <td class="px-6 py-4 text-sm text-gray-700">${app.full_name}</td>
+        <td class="px-6 py-4 text-sm text-gray-600">${app.email}</td>
+        <td class="px-6 py-4 text-sm text-gray-700">
+          <span class="capitalize">${app.applicant_type}</span>
+        </td>
+        <td class="px-6 py-4 text-sm">
+          <span class="plan-badge">${app.plan.replace('_', ' ').toUpperCase()}</span>
+        </td>
+        <td class="px-6 py-4 text-sm font-medium text-gray-900">
+          RM ${parseFloat(app.calculated_premium).toFixed(2)}
+        </td>
+        <td class="px-6 py-4 text-sm">
+          <span class="status-badge ${statusClass} capitalize">
+            ${app.status.replace('_', ' ')}
+          </span>
+        </td>
+        <td class="px-6 py-4 text-sm text-gray-600">${submittedDate}</td>
+        <td class="px-6 py-4 text-sm">
+          <div class="flex space-x-2">
+            <a href="/admin/applications/${app.id}/" class="text-blue-600 hover:text-blue-800 font-medium">View</a>
+            ${app.status === 'submitted' ? `
+              <button onclick="openApprovalModal('${app.id}', 'approve')" class="text-green-600 hover:text-green-800 font-medium">Approve</button>
+              <button onclick="openApprovalModal('${app.id}', 'reject')" class="text-red-600 hover:text-red-800 font-medium">Reject</button>
+            ` : ''}
+          </div>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  function openApprovalModal(appId, action) {
+    actionContext = { appId, action };
+    const modal = document.getElementById('actionModal');
+    const title = document.getElementById('modal_title');
+    const message = document.getElementById('modal_message');
+
+    if (action === 'approve') {
+      title.textContent = 'Approve Application';
+      message.textContent = 'Are you sure you want to approve this application? The applicant will receive a confirmation email.';
+    } else {
+      title.textContent = 'Reject Application';
+      message.textContent = 'Are you sure you want to reject this application? Please provide a reason.';
+    }
+    
+    document.getElementById('modal_notes').value = '';
+    modal.classList.remove('hidden');
+  }
+
+  function closeModal() {
+    document.getElementById('actionModal').classList.add('hidden');
+    actionContext = {};
+  }
+
+  function confirmAction() {
+    const { appId, action } = actionContext;
+    const notes = document.getElementById('modal_notes').value;
+    const endpoint = action === 'approve' ? 'approve' : 'reject';
+    const body = action === 'approve' 
+      ? { notes: notes }
+      : { reason: notes || 'No reason provided' };
+
+    fetch(`/api/admin/applications/${appId}/${endpoint}/`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify(body)
+    })
+    .then(response => response.json())
+    .then(data => {
+      alert(`Application ${action}ed successfully!`);
+      closeModal();
+      loadApplications();
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error performing action. Please try again.');
+    });
+  }
+
+  function exportData() {
+    let url = '/api/admin/applications/export/?format=csv';
+    if (currentFilters.status) url += `&status=${currentFilters.status}`;
+    if (currentFilters.plan) url += `&plan=${currentFilters.plan}`;
+    window.location.href = url;
+  }
+
+  function nextPage() {
+    if (currentPage < totalPages) {
+      currentPage++;
+      loadApplications();
+      window.scrollTo(0, 0);
+    }
+  }
+
+  function previousPage() {
+    if (currentPage > 1) {
+      currentPage--;
+      loadApplications();
+      window.scrollTo(0, 0);
+    }
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  // Load applications on page load
+  document.addEventListener('DOMContentLoaded', loadApplications);
+</script>
+{% endblock %}
