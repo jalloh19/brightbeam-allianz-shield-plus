@@ -5,6 +5,23 @@ let charts = {};
 let analyticsData = null;
 let lastMetricsBust = null;
 
+function normalizeKey(key) {
+  return String(key || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/-+/g, '_');
+}
+
+function normalizeObjectKeys(obj) {
+  const out = {};
+  if (!obj || typeof obj !== 'object') return out;
+  Object.keys(obj).forEach((k) => {
+    out[normalizeKey(k)] = obj[k];
+  });
+  return out;
+}
+
 function getMetricsBustValue() {
   try {
     return localStorage.getItem('asp_admin_metrics_bust');
@@ -98,11 +115,7 @@ function refreshAnalyticsData() {
 
 function updateKPICards(data) {
   // Extract counts safely using a normalized map
-  const breakdown = data.status_breakdown || {};
-  const b = {};
-  Object.keys(breakdown).forEach(k => {
-    b[k.toLowerCase()] = breakdown[k];
-  });
+  const b = normalizeObjectKeys(data.status_breakdown || {});
   
   const approved = b.approved || data.approved_applications || 0;
   const rejected = b.rejected || 0;
@@ -156,10 +169,7 @@ function initializePlanChart(data) {
   const ctx = document.getElementById('planChart');
   if (!ctx) return;
 
-  const planData = {};
-  Object.keys(data.plan_distribution || {}).forEach(k => {
-    planData[k.replace(/\s+/g, '_').toLowerCase()] = data.plan_distribution[k];
-  });
+  const planData = normalizeObjectKeys(data.plan_distribution || {});
 
   charts.plan = new Chart(ctx, {
     type: 'doughnut',
@@ -167,9 +177,9 @@ function initializePlanChart(data) {
       labels: ['Plan 5 (RM360K)', 'Plan 6 (RM600K)', 'Plan 7 (RM900K)'],
       datasets: [{
         data: [
-          planData.plan_5 || 0,
-          planData.plan_6 || 0,
-          planData.plan_7 || 0
+          planData.plan_5 || planData.plan5 || 0,
+          planData.plan_6 || planData.plan6 || 0,
+          planData.plan_7 || planData.plan7 || 0
         ],
         backgroundColor: [
           '#DBEAFE', // light-blue-200
@@ -198,7 +208,7 @@ function initializeStatusChart(data) {
   const ctx = document.getElementById('statusChart');
   if (!ctx) return;
 
-  const statusData = data.status_breakdown || {};
+  const statusData = normalizeObjectKeys(data.status_breakdown || {});
   charts.status = new Chart(ctx, {
     type: 'doughnut',
     data: {
@@ -239,10 +249,7 @@ function initializeApplicantChart(data) {
   const ctx = document.getElementById('applicantChart');
   if (!ctx) return;
 
-  const applicantData = {};
-  Object.keys(data.applicant_distribution || {}).forEach(k => {
-    applicantData[k.toLowerCase()] = data.applicant_distribution[k];
-  });
+  const applicantData = normalizeObjectKeys(data.applicant_distribution || {});
 
   charts.applicant = new Chart(ctx, {
     type: 'doughnut',
