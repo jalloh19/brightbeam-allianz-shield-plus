@@ -19,18 +19,45 @@ def form_view(request):
     return render(request, 'form.html', context)
 
 
+import json
 from backend.applications.models import Application
-from django.db.models import Q
+from django.db.models import Q, Count
 
 def admin_dashboard_view(request):
     """Public admin dashboard (no login required by business request)."""
+    # 1. KPI Counts
+    total_apps = Application.objects.count()
+    approved_count = Application.objects.filter(status__iexact='approved').count()
+    rejected_count = Application.objects.filter(status__iexact='rejected').count()
+    pending_count = Application.objects.filter(
+        Q(status__iexact='submitted') | Q(status__iexact='under_review')
+    ).count()
+
+    # 2. Chart Data (Status Breakdown)
+    status_rows = list(Application.objects.values('status').annotate(count=Count('id')))
+    status_map = {str(row['status']).lower(): row['count'] for row in status_rows}
+
+    # 3. Chart Data (Plan Distribution)
+    plan_rows = list(Application.objects.values('plan').annotate(count=Count('id')))
+    plan_map = {str(row['plan']).upper(): row['count'] for row in plan_rows}
+
+    # 4. Chart Data (Applicant Type)
+    app_type_rows = list(Application.objects.values('applicant_type').annotate(count=Count('id')))
+    app_type_map = {str(row['applicant_type']).title(): row['count'] for row in app_type_rows}
+
+    chart_data = {
+        'total_applications': total_apps,
+        'status_breakdown': status_map,
+        'plan_distribution': plan_map,
+        'applicant_distribution': app_type_map,
+    }
+
     context = {
-        'total_apps': Application.objects.count(),
-        'approved_count': Application.objects.filter(status__iexact='approved').count(),
-        'rejected_count': Application.objects.filter(status__iexact='rejected').count(),
-        'pending_count': Application.objects.filter(
-            Q(status__iexact='submitted') | Q(status__iexact='under_review')
-        ).count(),
+        'total_apps': total_apps,
+        'approved_count': approved_count,
+        'rejected_count': rejected_count,
+        'pending_count': pending_count,
+        'chart_data_json': json.dumps(chart_data),
     }
     return render(request, 'dashboard.html', context)
 

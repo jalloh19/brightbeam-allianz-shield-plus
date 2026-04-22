@@ -257,5 +257,24 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/dashboard.js' %}?v={% now 'U' %}"></script>
+<script src="{% static 'js/dashboard.js' %}"></script>
+<script>
+  // Initialize dashboard and charts with server-side data immediately
+  document.addEventListener('DOMContentLoaded', function() {
+    // Inject server-side data for instant chart rendering
+    const serverDataJson = '{{ chart_data_json|safe }}';
+    if (serverDataJson && serverDataJson !== 'null') {
+      const serverData = JSON.parse(serverDataJson);
+      console.log('Rendering charts with server-side data...');
+      if (typeof initializeCharts === 'function') {
+        initializeCharts(serverData);
+      }
+    }
+    
+    // Continue with standard initialization
+    if (typeof initializeDashboard === 'function') {
+      initializeDashboard();
+    }
+  });
+</script>
 {% endblock %}
