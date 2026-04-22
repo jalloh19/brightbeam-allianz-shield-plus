@@ -251,6 +251,11 @@ function updateStepDisplay() {
     // Update field visibility based on category selections
     updateFieldVisibility();
     calculatePremium();
+    
+    // Prepare review content if on step 10
+    if (currentStep === totalSteps) {
+        prepareReview();
+    }
 }
 
 // Update step indicators styling
@@ -444,126 +449,85 @@ function prepareReview() {
         return safe(t);
     };
     
-    let html = `
-        <div class="bg-white border border-gray-200 rounded-xl shadow-sm">
-            <div class="px-4 py-3 border-b border-gray-200">
-                <p class="text-sm text-gray-600">Review everything below. If something is wrong, go back and edit before submitting.</p>
-            </div>
-            <div class="p-4 max-h-[70vh] overflow-auto space-y-6">
-    `;
-
-    // Applicant type / category (step 1-2)
-    let applicantRows = '';
-    applicantRows += renderRow('Applicant Type', applicantTypeLabel(state.applicant_type));
+    let html = '';
+    
+    // Step 1 & 2: Category
+    let categoryRows = '';
+    categoryRows += renderRow('Applicant Type', applicantTypeLabel(state.applicant_type));
     if (isWorker) {
-        applicantRows += renderRow('Worker Category', safe(state.worker_category));
+        categoryRows += renderRow('Worker Category', state.worker_category ? state.worker_category.replace('_', ' ').toUpperCase() : '-');
     }
     if (isStudent) {
-        applicantRows += renderRow('Study Sponsor Type', safe(state.study_sponsor_type));
+        categoryRows += renderRow('Sponsorship Type', state.study_sponsor_type ? state.study_sponsor_type.replace('_', ' ').toUpperCase() : '-');
     }
-    html += renderSection('Applicant Type', applicantRows);
+    html += renderSection('Application Category', categoryRows);
 
-    // Personal + identification (step 3)
+    // Step 3: Personal Information
     let personalRows = '';
     personalRows += renderRow('Full Name', state.full_name);
     personalRows += renderRowIfSet('Preferred Name', state.preferred_name);
     personalRows += renderRow('Date of Birth', state.date_of_birth);
-    personalRows += renderRow('Age', `${calculateAgeFromDOB(state.date_of_birth)} years`);
-    personalRows += renderRow('Gender', state.gender);
-    personalRows += renderRowIfSet('Marital Status', state.marital_status);
+    personalRows += renderRow('Gender', state.gender === 'M' ? 'Male' : state.gender === 'F' ? 'Female' : state.gender || '-');
+    personalRows += renderRowIfSet('Marital Status', state.marital_status ? state.marital_status.charAt(0).toUpperCase() + state.marital_status.slice(1) : '');
     personalRows += renderRow('Nationality', state.nationality);
-    html += renderSection('Personal Information', personalRows);
+    personalRows += renderRow('ID Type', state.id_type ? state.id_type.replace('_', ' ').toUpperCase() : '-');
+    personalRows += renderRow('ID Number', maskId(state.id_number));
+    html += renderSection('Personal & Identification', personalRows);
 
-    let idRows = '';
-    idRows += renderRow('Identification Type', state.id_type);
-    idRows += renderRow('ID Number', maskId(state.id_number));
-    idRows += renderRowIfSet('ID Issuing Country', state.id_issuing_country);
-    idRows += renderRowIfSet('ID Expiry Date', state.id_expiry_date);
-    idRows += renderRowIfSet('Visa Type', state.visa_type);
-    idRows += renderRowIfSet('Visa Number', state.visa_number);
-    idRows += renderRowIfSet('Visa Expiry Date', state.visa_expiry_date);
-    idRows += renderRow('Passport Photo URL', state.passport_photo_url);
-    idRows += renderRowIfSet('Passport Photo EXIF Date', state.passport_photo_exif_date);
-    html += renderSection('Identification & Visa', idRows);
-
-    // Contact & address (step 4)
+    // Step 4: Contact & Address
     let contactRows = '';
-    contactRows += renderRow('Email', state.email);
-    contactRows += renderRow('Phone Country Code', state.phone_country_code);
-    contactRows += renderRow('Phone Number', state.phone_number);
-    contactRows += renderRowIfSet('Contact Preference', state.contact_preference);
-    html += renderSection('Contact', contactRows);
+    contactRows += renderRow('Email Address', state.email);
+    contactRows += renderRow('Phone Number', `${state.phone_country_code}${state.phone_number}`);
+    contactRows += renderRow('Address', `${state.address_line_1}${state.address_line_2 ? ', ' + state.address_line_2 : ''}`);
+    contactRows += renderRow('Location', `${state.city}, ${state.state_province} ${state.postcode}`);
+    contactRows += renderRow('Country', state.country);
+    html += renderSection('Contact & Address', contactRows);
 
-    let addressRows = '';
-    addressRows += renderRow('Address Line 1', state.address_line_1);
-    addressRows += renderRow('Address Line 2', state.address_line_2);
-    addressRows += renderRow('City', state.city);
-    addressRows += renderRow('State / Province', state.state_province);
-    addressRows += renderRow('Postcode', state.postcode);
-    addressRows += renderRow('Country', state.country);
-    html += renderSection('Address', addressRows);
-
-    // Worker / student details (step 5)
+    // Step 5: Professional / Educational Details
     if (isWorker) {
         let workerRows = '';
         workerRows += renderRow('Occupation', state.occupation);
-        workerRows += renderRow('Industry', state.industry);
-        workerRows += renderRow('Employer Name', state.employer_name);
-        workerRows += renderRowIfSet('Employer Registration Number', state.employer_registration_number);
-        workerRows += renderRowIfSet('Monthly Salary', state.monthly_salary ? `RM${state.monthly_salary}` : state.monthly_salary);
-        workerRows += renderRow('Employment Type', state.employment_type);
-        workerRows += renderRow('Work Permit Status', state.work_permit_status);
-        workerRows += renderRowIfSet('Work Permit Expiry Date', state.work_permit_expiry_date);
-        workerRows += renderRowIfSet('Years of Experience', state.years_of_experience);
-        workerRows += renderRowIfSet('Professional License Number', state.professional_license_number);
-        workerRows += renderRowIfSet('Employer Sponsorship Approved', yesNo(state.employer_sponsorship_approved));
-        workerRows += renderRowIfSet('Work Environment', state.work_environment);
+        workerRows += renderRow('Industry', state.industry ? state.industry.charAt(0).toUpperCase() + state.industry.slice(1) : '-');
+        workerRows += renderRow('Employer', state.employer_name);
+        workerRows += renderRow('Monthly Salary', state.monthly_salary ? `RM ${state.monthly_salary}` : '-');
+        workerRows += renderRow('Employment Type', state.employment_type ? state.employment_type.charAt(0).toUpperCase() + state.employment_type.slice(1) : '-');
+        workerRows += renderRowIfSet('Experience', state.years_of_experience ? `${state.years_of_experience} years` : '');
+        workerRows += renderRowIfSet('License #', state.professional_license_number);
+        workerRows += renderRow('Permit Status', state.work_permit_status ? state.work_permit_status.charAt(0).toUpperCase() + state.work_permit_status.slice(1) : '-');
+        workerRows += renderRowIfSet('Permit Expiry', state.work_permit_expiry_date);
         html += renderSection('Employment Details', workerRows);
-    }
-
-    if (isStudent) {
+    } else if (isStudent) {
         let studentRows = '';
-        studentRows += renderRow('University Name', state.university_name);
-        studentRows += renderRow('Study Level', state.study_level);
-        studentRows += renderRow('Field of Study', state.field_of_study);
-        studentRows += renderRow('Course of Study', state.course_of_study);
+        studentRows += renderRow('University', state.university_name);
+        studentRows += renderRow('Study Level', state.study_level ? state.study_level.charAt(0).toUpperCase() + state.study_level.slice(1) : '-');
+        studentRows += renderRow('Field of Study', state.field_of_study ? state.field_of_study.replace('_', ' ').toUpperCase() : '-');
+        studentRows += renderRow('Course Name', state.course_of_study);
         studentRows += renderRow('Expected Graduation', state.expected_graduation);
-        studentRows += renderRowIfSet('Intended Duration (Months)', state.intended_duration_months);
-        studentRows += renderRowIfSet('Semester Start Date', state.semester_start_date);
-        studentRows += renderRowIfSet('On-campus Residential', yesNo(state.on_campus_residential === true || state.on_campus_residential === 'true'));
-        studentRows += renderRowIfSet('Scholarship Name', state.scholarship_name);
-        studentRows += renderRowIfSet('Scholarship Award Amount', state.scholarship_award_amount);
-        studentRows += renderRowIfSet('Financial Proof Type', state.financial_proof_type);
-        studentRows += renderRowIfSet('Financial Proof Submitted', yesNo(state.financial_proof_submitted));
-        studentRows += renderRowIfSet('Employer Sponsoring Study', state.employer_sponsoring_study);
+        studentRows += renderRowIfSet('Stay Duration', state.intended_duration_months ? `${state.intended_duration_months} months` : '');
+        studentRows += renderRow('Living Arrangement', state.on_campus_residential === 'true' ? 'On-Campus' : 'Off-Campus');
         html += renderSection('Education Details', studentRows);
     }
 
-    // Coverage & add-ons (step 6-7)
+    // Step 6 & 7: Coverage
     let coverageRows = '';
-    coverageRows += renderRow('Plan', planLabel(state.plan));
-    coverageRows += renderRow('Annual Premium', state.premium ? `RM${state.premium}/year` : 'calculating');
-    coverageRows += renderRow('Selected Add-ons', (state.addons && state.addons.length) ? state.addons.join(', ') : 'None');
-    html += renderSection('Coverage & Premium', coverageRows);
+    coverageRows += renderRow('Selected Plan', planLabel(state.plan));
+    coverageRows += renderRow('Selected Add-ons', (state.addons && state.addons.length) ? state.addons.map(a => a.replace('_', ' ').charAt(0).toUpperCase() + a.replace('_', ' ').slice(1)).join(', ') : 'None');
+    coverageRows += renderRow('Estimated Premium', `RM ${state.premium || '0.00'}/year`);
+    html += renderSection('Coverage & Add-ons', coverageRows);
 
-    // Payment (step 8)
+    // Step 8: Payment
     let paymentRows = '';
-    paymentRows += renderRow('Preferred Payment Method', (state.preferred_payment_method || 'not_selected').replace('_', ' '));
-    html += renderSection('Payment', paymentRows);
+    paymentRows += renderRow('Preferred Method', state.preferred_payment_method ? state.preferred_payment_method.replace('_', ' ').toUpperCase() : 'Not Selected');
+    html += renderSection('Payment Preference', paymentRows);
 
-    // Consents (step 9)
+    // Step 9: Declarations
     let consentRows = '';
-    consentRows += renderRow('Accuracy Confirmation', yesNo(state.accuracy_confirmation));
+    consentRows += renderRow('Accuracy Confirmed', yesNo(state.accuracy_confirmation));
     consentRows += renderRow('PDPA Consent', yesNo(state.pdpa_consent));
     consentRows += renderRow('Terms Accepted', yesNo(state.terms_accepted));
-    consentRows += renderRow('Marketing Opt-in', yesNo(state.marketing_opt_in));
-    html += renderSection('Consents', consentRows);
+    consentRows += renderRow('Marketing Updates', yesNo(state.marketing_opt_in));
+    html += renderSection('Declarations & Consents', consentRows);
 
-    html += `
-            </div>
-        </div>
-    `;
-    
     reviewContent.innerHTML = html;
 }
 

@@ -7,11 +7,22 @@ let analyticsData = null;
 function initializeDashboard() {
   console.log('Initializing admin dashboard...');
   loadAnalyticsData();
-  setInterval(refreshAnalyticsData, 60000); // Refresh every minute
+  
+  // Refresh every minute
+  setInterval(refreshAnalyticsData, 60000); 
+
+  // Refresh when navigating back to this tab (e.g. from detail page)
+  window.addEventListener('pageshow', function(event) {
+    if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+      console.log('Navigated back to dashboard, refreshing data...');
+      refreshAnalyticsData();
+    }
+  });
 
   // Refresh KPIs/charts when another tab approves/rejects
   window.addEventListener('storage', function (e) {
     if (e && e.key === 'asp_admin_metrics_bust') {
+      console.log('Metrics bust detected from another tab, refreshing...');
       refreshAnalyticsData();
     }
   });
@@ -45,31 +56,36 @@ function refreshAnalyticsData() {
 }
 
 function updateKPICards(data) {
+  // Extract counts safely from status_breakdown or fallback fields
+  const breakdown = data.status_breakdown || {};
+  
+  const approved = breakdown.approved || data.approved_applications || 0;
+  const rejected = breakdown.rejected || 0;
+  const pending = (breakdown.submitted || 0) + (breakdown.under_review || 0);
+  const drafts = breakdown.draft || 0;
+  
+  // Logical Consistency: Total = Approved + Rejected + Pending + Drafts
+  // The backend 'total_applications' should match this sum
+  const calculatedTotal = approved + rejected + pending + drafts;
+  const displayTotal = Math.max(data.total_applications || 0, calculatedTotal);
+
   // Total Applications
-  document.getElementById('kpi_total_applications').textContent = 
-    data.total_applications.toLocaleString();
+  const elTotal = document.getElementById('kpi_total_applications');
+  if (elTotal) elTotal.textContent = displayTotal.toLocaleString();
 
   // Total Approved
-  const approved = (data.status_breakdown?.approved || data.approved_applications || 0);
   const elApproved = document.getElementById('kpi_total_approved');
   if (elApproved) elApproved.textContent = approved.toLocaleString();
 
-  // Pending Review
-  document.getElementById('kpi_pending_review').textContent = 
-    (data.pending_review || 0).toLocaleString();
+  // Pending Review (Submitted + Under Review)
+  const elPending = document.getElementById('kpi_pending_review');
+  if (elPending) elPending.textContent = pending.toLocaleString();
 
   // Total Rejected
-  const rejected = (data.status_breakdown?.rejected || 0);
   const elRejected = document.getElementById('kpi_total_rejected');
   if (elRejected) elRejected.textContent = rejected.toLocaleString();
 
-  // Approval Rate
-  const approvalRate = data.total_applications > 0 
-    ? Math.round((approved / data.total_applications) * 100)
-    : 0;
-  document.getElementById('kpi_approval_rate').textContent = `${approvalRate}%`;
-
-  console.log('KPI cards updated');
+  console.log('KPI cards updated with logical consistency check');
 }
 
 // Expose for other pages (and debugging)
