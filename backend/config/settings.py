@@ -5,6 +5,7 @@ Production-ready configuration with security best practices.
 
 import os
 import sys
+import urllib.parse as urlparse
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -74,7 +75,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.config.wsgi.application'
 
-# Database configuration from environment variable
+# Database configuration
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -85,6 +86,19 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
+
+# Support for DATABASE_URL (standard for Railway, Heroku, etc.)
+db_url = os.getenv('DATABASE_URL')
+if db_url and not db_url.startswith('sqlite'):
+    url = urlparse.urlparse(db_url)
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': url.path[1:],
+        'USER': url.username,
+        'PASSWORD': url.password,
+        'HOST': url.hostname,
+        'PORT': url.port or '5432',
+    }
 
 # For local development with SQLite (when DATABASE_URL contains sqlite)
 if os.getenv('DATABASE_URL', '').startswith('sqlite'):
