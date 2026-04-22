@@ -100,17 +100,22 @@ def get_analytics(request):
     week_ago = timezone.now() - timedelta(days=7)
     week_apps = Application.objects.filter(created_at__gte=week_ago).count()
     
-    # Status breakdown (both list and keyed map for frontend compatibility)
-    status_rows = list(Application.objects.values('status').annotate(count=Count('id')))
-    status_breakdown_map = {str(row['status']).lower(): row['count'] for row in status_rows}
+    # Explicit status counting to guarantee keys for frontend
+    status_breakdown_map = {
+        'submitted': Application.objects.filter(status__iexact='submitted').count(),
+        'under_review': Application.objects.filter(status__iexact='under_review').count(),
+        'approved': Application.objects.filter(status__iexact='approved').count(),
+        'rejected': Application.objects.filter(status__iexact='rejected').count(),
+        'draft': Application.objects.filter(status__iexact='draft').count(),
+    }
 
     # Plan distribution (both list and keyed map)
     plan_rows = list(Application.objects.values('plan').annotate(count=Count('id')))
-    plan_distribution_map = {row['plan']: row['count'] for row in plan_rows}
+    plan_distribution_map = {str(row['plan']).lower(): row['count'] for row in plan_rows}
 
     # Applicant type distribution
     applicant_rows = list(Application.objects.values('applicant_type').annotate(count=Count('id')))
-    applicant_distribution_map = {row['applicant_type']: row['count'] for row in applicant_rows}
+    applicant_distribution_map = {str(row['applicant_type']).lower(): row['count'] for row in applicant_rows}
 
     # Pending review includes newly submitted applications not yet decided.
     pending_review = Application.objects.filter(
