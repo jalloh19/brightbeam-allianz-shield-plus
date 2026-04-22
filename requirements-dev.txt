@@ -1,0 +1,48 @@
+# Development & Testing Dependencies for Allianz Shield Plus
+
+# Testing Framework
+pytest>=7.4.0
+pytest-django>=4.5.2
+pytest-cov>=4.1.0
+pytest-mock>=3.11.1
+pytest-xdist>=3.3.1  # Parallel test execution
+
+# Test Data & Factories
+factory-boy>=3.3.0
+faker>=18.0.0
+
+# API Testing & Mocking
+responses>=0.23.0
+requests-mock>=1.11.0
+
+# Database & Migrations
+django-test-migrations>=1.2.0
+
+# Code Quality & Linting
+black>=23.7.0
+isort>=5.12.0
+flake8>=6.0.0
+pylint>=2.17.0
+
+# Security Scanning
+bandit>=1.7.5
+safety>=2.3.0
+semgrep>=1.40.0
+
+# PDF Testing & Validation
+PyPDF2>=3.0.0
+pdfminer.six>=20221105
+
+# Frontend Testing
+playwright>=1.40.0
+
+# Performance Testing
+locust>=2.16.1
+
+# Documentation
+sphinx>=7.1.0
+sphinx-rtd-theme>=1.3.0
+
+# Development Tools
+ipython>=8.14.0
+django-extensions>=3.2.3

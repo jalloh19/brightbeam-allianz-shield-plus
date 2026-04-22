@@ -51,7 +51,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         - CREATE: Allow any (anonymous users can submit)
         - LIST, UPDATE, DELETE, APPROVE, REJECT: Admin only
         """
-        if self.action == 'create':
+        if self.action in {'create', 'retrieve'}:
             permission_classes = [permissions.AllowAny]
         else:
             permission_classes = [permissions.IsAdminUser]
@@ -79,6 +79,11 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         )
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """Allow admin updates with partial payloads via PUT for dashboard flows."""
+        kwargs['partial'] = True
+        return super().update(request, *args, **kwargs)
     
     def list(self, request, *args, **kwargs):
         """
@@ -185,7 +190,13 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         serializer = AuditLogSerializer(audit_logs, many=True)
         return Response(serializer.data)
     
-    @action(detail=True, methods=['get'], permission_classes=[permissions.IsAdminUser])
+    @action(
+        detail=True,
+        methods=['get'],
+        permission_classes=[permissions.IsAdminUser],
+        url_path='export-pdf',
+        url_name='export-pdf',
+    )
     def export_pdf(self, request, id=None):
         """
         Export application as PDF document (admin only).

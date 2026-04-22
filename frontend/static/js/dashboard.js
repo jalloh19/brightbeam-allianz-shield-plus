@@ -21,7 +21,7 @@ function loadAnalyticsData() {
       updateKPICards(data);
       
       // Initialize charts
-      initializeCharts(data);
+      initializeCharts(data);Simple File Upload
       
       // Load recent applications
       loadRecentApplications();

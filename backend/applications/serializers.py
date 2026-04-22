@@ -170,7 +170,6 @@ class ApplicationSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id',
             'application_number',
-            'status',
             'calculated_premium',
             'total_annual_premium',
             'created_at',
@@ -294,6 +293,9 @@ class ApplicationSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         """Override create to set data retention expiry (7 years from now) and photo upload date."""
+        # Public submissions must always start as submitted, regardless of client payload.
+        validated_data['status'] = 'submitted'
+
         # Set photo upload date if photo URL is provided
         if validated_data.get('passport_photo_url') and not validated_data.get('passport_photo_upload_date'):
             validated_data['passport_photo_upload_date'] = timezone.now()
@@ -310,6 +312,14 @@ class ApplicationSerializer(serializers.ModelSerializer):
         )
         
         return instance
+
+    def to_representation(self, instance):
+        """Mask sensitive identifiers in API responses."""
+        data = super().to_representation(instance)
+        id_number = data.get('id_number')
+        if id_number:
+            data['id_number'] = f"****{id_number[-4:]}"
+        return data
 
 
 class ApplicationListSerializer(serializers.ModelSerializer):

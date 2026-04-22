@@ -406,6 +406,20 @@ class Application(models.Model):
     last_reviewed_by = models.CharField(max_length=255, blank=True)
     review_notes = models.TextField(blank=True, help_text="Internal admin notes")
     
+    def save(self, *args, **kwargs):
+        """Generate application number on first save."""
+        if not self.application_number:
+            from django.utils import timezone
+            import random
+            import string
+            
+            # Format: ASP-YYYYMMDD-XXXX
+            date_str = timezone.now().strftime('%Y%m%d')
+            random_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+            self.application_number = f"ASP-{date_str}-{random_str}"
+            
+        super().save(*args, **kwargs)
+
     class Meta:
         ordering = ['-created_at']
         indexes = [
