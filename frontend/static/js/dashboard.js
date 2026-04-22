@@ -29,7 +29,7 @@ function initializeDashboard() {
 }
 
 function loadAnalyticsData() {
-  fetch('/api/admin/analytics/')
+  fetch(`/api/admin/analytics/?t=${Date.now()}`)
     .then(response => response.json())
     .then(data => {
       analyticsData = data;
