@@ -167,6 +167,36 @@ class ApplicationSerializer(serializers.ModelSerializer):
             # Related
             'notifications',
         ]
+        read_only_fields = [
+            'id',
+            'application_number',
+            'calculated_premium',
+            'total_annual_premium',
+            'created_at',
+            'updated_at',
+            'submitted_at',
+            'passport_photo_upload_date',
+            'beneficiaries',
+            'payment',
+            'notifications',
+            'data_retention_expiry',
+        ]
+        # Some fields are conditionally required depending on applicant_type.
+        # We mark them optional at the field level, then enforce requirements in validate().
+        extra_kwargs = {
+            # Student submissions: occupation is set server-side ("Student")
+            'occupation': {'required': False, 'allow_blank': True},
+
+            # Worker-only fields (enforced in validate_* when applicant_type == worker)
+            'worker_category': {'required': False, 'allow_blank': True},
+            'employment_type': {'required': False, 'allow_blank': True},
+            'work_permit_status': {'required': False, 'allow_blank': True},
+
+            # Student-only fields (enforced in validate() when applicant_type == student)
+            'study_sponsor_type': {'required': False, 'allow_blank': True},
+            'study_level': {'required': False, 'allow_blank': True},
+            'university_name': {'required': False, 'allow_blank': True},
+        }
     
     def validate(self, attrs):
         """
@@ -178,7 +208,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
         if is_student:
             # Student submissions should not fail due to worker-only fields.
-            attrs['occupation'] = attrs.get('occupation') or 'Student'
+            attrs['occupation'] = (attrs.get('occupation') or '').strip() or 'Student'
             attrs['worker_category'] = ''
             attrs['employment_type'] = ''
             attrs['work_permit_status'] = ''
@@ -186,15 +216,15 @@ class ApplicationSerializer(serializers.ModelSerializer):
             attrs['years_of_experience'] = None
             attrs['work_permit_expiry_date'] = None
 
-            if not attrs.get('study_sponsor_type'):
+            if not (attrs.get('study_sponsor_type') or '').strip():
                 raise serializers.ValidationError({
                     'study_sponsor_type': 'Study sponsorship type must be specified for students.'
                 })
-            if not attrs.get('study_level'):
+            if not (attrs.get('study_level') or '').strip():
                 raise serializers.ValidationError({
                     'study_level': 'Level of study must be specified for students.'
                 })
-            if not attrs.get('university_name'):
+            if not (attrs.get('university_name') or '').strip():
                 raise serializers.ValidationError({
                     'university_name': 'University name must be provided for students.'
                 })
@@ -210,20 +240,6 @@ class ApplicationSerializer(serializers.ModelSerializer):
             attrs['on_campus_residential'] = False
 
         return attrs
-        read_only_fields = [
-            'id',
-            'application_number',
-            'calculated_premium',
-            'total_annual_premium',
-            'created_at',
-            'updated_at',
-            'submitted_at',
-            'passport_photo_upload_date',
-            'beneficiaries',
-            'payment',
-            'notifications',
-            'data_retention_expiry',
-        ]
     
     def validate_email(self, value):
         """Ensure email is unique (excluding current instance)."""

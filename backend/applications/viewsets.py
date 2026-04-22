@@ -6,6 +6,7 @@ import logging
 
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django.utils import timezone
@@ -65,7 +66,17 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         Sends confirmation email to applicant.
         """
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError:
+            # Railway edge logs often omit response bodies; log validation details server-side.
+            logger.warning(
+                "Application submission rejected (400). ip=%s keys=%s errors=%s",
+                self.get_client_ip(request),
+                sorted(list(getattr(request, "data", {}) or {}).keys()),
+                serializer.errors,
+            )
+            raise
         
         application = serializer.save(
             ip_address=self.get_client_ip(request),
