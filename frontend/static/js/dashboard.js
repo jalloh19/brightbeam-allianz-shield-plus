@@ -67,16 +67,6 @@ function initializeDashboard() {
 }
 
 function loadAnalyticsData() {
-  const log = (msg) => {
-    const logEl = document.getElementById('diagnostic_logs');
-    if (logEl) {
-      const div = document.createElement('div');
-      div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-      logEl.prepend(div);
-    }
-  };
-  
-  log('Fetching dashboard stats...');
   fetch(`/api/admin/dashboard-stats/?t=${Date.now()}`)
     .then(response => {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -84,7 +74,6 @@ function loadAnalyticsData() {
     })
     .then(data => {
       analyticsData = data;
-      log('Stats loaded successfully.');
       
       // Update KPI cards
       updateKPICards(data);
@@ -100,40 +89,16 @@ function loadAnalyticsData() {
     })
     .catch(error => {
       console.error('Error loading stats:', error);
-      const logEl = document.getElementById('diagnostic_logs');
-      if (logEl) {
-        const div = document.createElement('div');
-        div.style.color = '#ef4444';
-        div.textContent = `[${new Date().toLocaleTimeString()}] CRITICAL ERROR: ${error.message}. The request may be blocked by an AdBlocker.`;
-        logEl.prepend(div);
-      }
     });
 }
 
 function refreshAnalyticsData() {
-  console.log('Refreshing analytics data...');
   loadAnalyticsData();
 }
 
 function updateKPICards(data) {
-  const log = (msg) => {
-    console.log(msg);
-    const logEl = document.getElementById('diagnostic_logs');
-    if (logEl) {
-      const div = document.createElement('div');
-      div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-      logEl.prepend(div);
-    }
-  };
-
-  log('Updating KPI cards...');
-  const rawEl = document.getElementById('diagnostic_raw');
-  if (rawEl) rawEl.textContent = JSON.stringify(data, null, 2);
-  
   // Extract counts safely using a normalized map
   const breakdown = data.status_breakdown || {};
-  log(`Breakdown keys: ${Object.keys(breakdown).join(', ')}`);
-
   const b = {};
   Object.keys(breakdown).forEach(k => {
     b[k.toLowerCase()] = breakdown[k];
@@ -144,12 +109,9 @@ function updateKPICards(data) {
   const pending = (b.submitted || 0) + (b.under_review || 0);
   const drafts = b.draft || 0;
   
-  log(`Parsed: Approved=${approved}, Rejected=${rejected}, Pending=${pending}`);
-  
   // Logical Consistency: Total = Approved + Rejected + Pending + Drafts
   const calculatedTotal = approved + rejected + pending + drafts;
   const displayTotal = Math.max(data.total_applications || 0, calculatedTotal);
-  log(`Final displayTotal: ${displayTotal}`);
 
   // Update DOM elements with fallback checks
   const updateEl = (id, val) => {
@@ -163,8 +125,6 @@ function updateKPICards(data) {
   updateEl('kpi_total_approved', approved);
   updateEl('kpi_pending_review', pending);
   updateEl('kpi_total_rejected', rejected);
-
-  log('KPI cards updated successfully.');
 }
 
 // Expose for other pages (and debugging)

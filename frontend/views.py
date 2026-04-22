@@ -19,9 +19,20 @@ def form_view(request):
     return render(request, 'form.html', context)
 
 
+from backend.applications.models import Application
+from django.db.models import Q
+
 def admin_dashboard_view(request):
     """Public admin dashboard (no login required by business request)."""
-    return render(request, 'dashboard.html')
+    context = {
+        'total_apps': Application.objects.count(),
+        'approved_count': Application.objects.filter(status__iexact='approved').count(),
+        'rejected_count': Application.objects.filter(status__iexact='rejected').count(),
+        'pending_count': Application.objects.filter(
+            Q(status__iexact='submitted') | Q(status__iexact='under_review')
+        ).count(),
+    }
+    return render(request, 'dashboard.html', context)
 
 
 def admin_applications_view(request):
