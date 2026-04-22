@@ -340,24 +340,24 @@
                         
                         <div>
                             <label class="form-label">State/Province *</label>
-                            <select name="state_province" class="form-select" required>
+                            <select name="state_province" id="state-select" class="form-select" required>
                                 <option value="">Select State</option>
-                                <option value="Kuala Lumpur">Kuala Lumpur</option>
-                                <option value="Selangor">Selangor</option>
-                                <option value="Penang">Penang</option>
                                 <option value="Johor">Johor</option>
                                 <option value="Kedah">Kedah</option>
                                 <option value="Kelantan">Kelantan</option>
+                                <option value="Kuala Lumpur">Kuala Lumpur</option>
+                                <option value="Labuan">Labuan</option>
                                 <option value="Malacca">Malacca</option>
                                 <option value="Negeri Sembilan">Negeri Sembilan</option>
                                 <option value="Pahang">Pahang</option>
+                                <option value="Penang">Penang</option>
                                 <option value="Perak">Perak</option>
                                 <option value="Perlis">Perlis</option>
+                                <option value="Putrajaya">Putrajaya</option>
                                 <option value="Sabah">Sabah</option>
                                 <option value="Sarawak">Sarawak</option>
+                                <option value="Selangor">Selangor</option>
                                 <option value="Terengganu">Terengganu</option>
-                                <option value="Putrajaya">Putrajaya</option>
-                                <option value="Labuan">Labuan</option>
                             </select>
                         </div>
                     </div>
@@ -371,7 +371,7 @@
                         
                         <div>
                             <label class="form-label">Country *</label>
-                            <select name="country" class="form-select" required>
+                            <select name="country" id="country-select" class="form-select" onchange="handleCountryChange(this)" required>
                                 <option value="Malaysia" selected>Malaysia</option>
                                 <option value="Singapore">Singapore</option>
                                 <option value="Thailand">Thailand</option>

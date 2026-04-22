@@ -15,6 +15,62 @@ function handleNationalityOtherInput(input) {
     window.formState.nationality = input.value;
     saveFormState();
 }
+
+// Handle Country change to update State/Province options
+const STATE_DATA = {
+    'Malaysia': [
+        'Johor', 'Kedah', 'Kelantan', 'Kuala Lumpur', 'Labuan', 'Malacca', 
+        'Negeri Sembilan', 'Pahang', 'Penang', 'Perak', 'Perlis', 'Putrajaya', 
+        'Sabah', 'Sarawak', 'Selangor', 'Terengganu'
+    ],
+    'Singapore': [
+        'Central Singapore', 'North East Singapore', 'North West Singapore', 
+        'South East Singapore', 'South West Singapore'
+    ],
+    'Thailand': [
+        'Bangkok', 'Chiang Mai', 'Phuket', 'Chonburi', 'Samut Prakan', 'Other'
+    ]
+};
+
+function handleCountryChange(select) {
+    const country = select.value;
+    updateStateOptions(country);
+    
+    // Clear state selection when country changes
+    window.formState.country = country;
+    window.formState.state_province = '';
+    
+    // Save to global state
+    saveFormState();
+}
+
+function updateStateOptions(country, selectedState = '') {
+    const stateSelect = document.getElementById('state-select');
+    if (!stateSelect) return;
+    
+    // Clear current options except the first one
+    stateSelect.innerHTML = '<option value="">Select State</option>';
+    
+    const states = STATE_DATA[country] || [];
+    
+    if (states.length > 0) {
+        states.forEach(state => {
+            const option = document.createElement('option');
+            option.value = state;
+            option.textContent = state;
+            if (state === selectedState) {
+                option.selected = true;
+            }
+            stateSelect.appendChild(option);
+        });
+    } else {
+        // If country not in list, provide a text-like experience or "Other"
+        const option = document.createElement('option');
+        option.value = 'Other';
+        option.textContent = 'Other';
+        stateSelect.appendChild(option);
+    }
+}
 /**
  * Main Form Engine - Handles step navigation, form state, and submission
  * Brightbeam Allianz Shield Plus Application
@@ -146,6 +202,14 @@ function applyApiValidationErrors(apiErrors) {
 // Initialize form on page load
 function initializeForm() {
     loadFormState();
+    
+    // Load state options based on current country
+    if (window.formState && window.formState.country) {
+        updateStateOptions(window.formState.country, window.formState.state_province);
+    } else {
+        updateStateOptions('Malaysia');
+    }
+    
     updateStepDisplay();
     attachEventListeners();
 }

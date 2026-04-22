@@ -3,9 +3,33 @@
 
 let charts = {};
 let analyticsData = null;
+let lastMetricsBust = null;
+
+function getMetricsBustValue() {
+  try {
+    return localStorage.getItem('asp_admin_metrics_bust');
+  } catch (_e) {
+    return null;
+  }
+}
+
+function maybeRefreshFromBust(source = 'unknown') {
+  const current = getMetricsBustValue();
+  if (!current) return;
+  if (lastMetricsBust === null) {
+    lastMetricsBust = current;
+    return;
+  }
+  if (current !== lastMetricsBust) {
+    lastMetricsBust = current;
+    console.log(`Metrics bust changed (${source}), refreshing...`);
+    refreshAnalyticsData();
+  }
+}
 
 function initializeDashboard() {
   console.log('Initializing admin dashboard...');
+  lastMetricsBust = getMetricsBustValue();
   loadAnalyticsData();
   
   // Refresh every minute
@@ -23,8 +47,18 @@ function initializeDashboard() {
   window.addEventListener('storage', function (e) {
     if (e && e.key === 'asp_admin_metrics_bust') {
       console.log('Metrics bust detected from another tab, refreshing...');
+      lastMetricsBust = e.newValue || getMetricsBustValue();
       refreshAnalyticsData();
     }
+  });
+
+  // Refresh when the tab becomes visible/focused again.
+  // Note: storage events do NOT fire in the same document that called localStorage.setItem.
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) maybeRefreshFromBust('visibilitychange');
+  });
+  window.addEventListener('focus', function () {
+    maybeRefreshFromBust('focus');
   });
 }
 
