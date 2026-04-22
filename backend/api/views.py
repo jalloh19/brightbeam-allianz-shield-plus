@@ -4,7 +4,7 @@ API views for data endpoints and analytics.
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny
 from rest_framework import status
 from django.db.models import Count, Q
 from django.utils import timezone
@@ -86,10 +86,10 @@ def get_id_types(request):
     return Response({'id_types': id_types}, status=status.HTTP_200_OK)
 
 
-# Admin analytics endpoints
+# Admin analytics endpoints (public by request)
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([AllowAny])
 def get_analytics(request):
     """
     Return KPI metrics and statistics for admin dashboard.
@@ -126,7 +126,7 @@ def get_analytics(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([AllowAny])
 def get_dropoff_analysis(request):
     """
     Analyze form submission dropoff by step.

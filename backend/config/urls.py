@@ -9,11 +9,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    # Admin interface
-    path('admin/', admin.site.urls),
+    # Public admin dashboard routes (no login).
+    path('admin/', include('frontend.admin_urls')),
+    # Keep Django admin available under a separate path.
+    path('django-admin/', admin.site.urls),
     
     # API routes
     path('api/', include('backend.api.urls')),
+    path('api/admin/applications/', include('backend.applications.urls')),
     path('api/applications/', include('backend.applications.urls')),
     
     # Frontend views
