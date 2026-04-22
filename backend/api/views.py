@@ -102,7 +102,7 @@ def get_analytics(request):
     
     # Status breakdown (both list and keyed map for frontend compatibility)
     status_rows = list(Application.objects.values('status').annotate(count=Count('id')))
-    status_breakdown_map = {row['status']: row['count'] for row in status_rows}
+    status_breakdown_map = {str(row['status']).lower(): row['count'] for row in status_rows}
 
     # Plan distribution (both list and keyed map)
     plan_rows = list(Application.objects.values('plan').annotate(count=Count('id')))

@@ -56,6 +56,7 @@ function refreshAnalyticsData() {
 }
 
 function updateKPICards(data) {
+  console.log('Updating KPI cards with data:', data);
   // Extract counts safely from status_breakdown or fallback fields
   const breakdown = data.status_breakdown || {};
   
@@ -63,6 +64,8 @@ function updateKPICards(data) {
   const rejected = breakdown.rejected || 0;
   const pending = (breakdown.submitted || 0) + (breakdown.under_review || 0);
   const drafts = breakdown.draft || 0;
+  
+  console.log('Parsed counts - Approved:', approved, 'Rejected:', rejected, 'Pending:', pending);
   
   // Logical Consistency: Total = Approved + Rejected + Pending + Drafts
   // The backend 'total_applications' should match this sum
@@ -85,7 +88,7 @@ function updateKPICards(data) {
   const elRejected = document.getElementById('kpi_total_rejected');
   if (elRejected) elRejected.textContent = rejected.toLocaleString();
 
-  console.log('KPI cards updated with logical consistency check');
+  console.log('KPI cards updated. Total displayed:', displayTotal);
 }
 
 // Expose for other pages (and debugging)
