@@ -167,6 +167,49 @@ class ApplicationSerializer(serializers.ModelSerializer):
             # Related
             'notifications',
         ]
+    
+    def validate(self, attrs):
+        """
+        Normalize applicant-specific fields and enforce conditional requirements.
+        """
+        applicant_type = attrs.get('applicant_type') or self.initial_data.get('applicant_type')
+        is_student = applicant_type == 'student'
+        attrs['is_student'] = is_student
+
+        if is_student:
+            # Student submissions should not fail due to worker-only fields.
+            attrs['occupation'] = attrs.get('occupation') or 'Student'
+            attrs['worker_category'] = ''
+            attrs['employment_type'] = ''
+            attrs['work_permit_status'] = ''
+            attrs['monthly_salary'] = None
+            attrs['years_of_experience'] = None
+            attrs['work_permit_expiry_date'] = None
+
+            if not attrs.get('study_sponsor_type'):
+                raise serializers.ValidationError({
+                    'study_sponsor_type': 'Study sponsorship type must be specified for students.'
+                })
+            if not attrs.get('study_level'):
+                raise serializers.ValidationError({
+                    'study_level': 'Level of study must be specified for students.'
+                })
+            if not attrs.get('university_name'):
+                raise serializers.ValidationError({
+                    'university_name': 'University name must be provided for students.'
+                })
+        else:
+            # Worker submissions should not carry student-only values.
+            attrs['study_sponsor_type'] = ''
+            attrs['study_level'] = ''
+            attrs['university_name'] = ''
+            attrs['field_of_study'] = ''
+            attrs['course_of_study'] = ''
+            attrs['expected_graduation'] = None
+            attrs['intended_duration_months'] = None
+            attrs['on_campus_residential'] = False
+
+        return attrs
         read_only_fields = [
             'id',
             'application_number',

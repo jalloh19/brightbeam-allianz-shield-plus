@@ -79,3 +79,38 @@ class TestApplicationAPI:
         
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "pdpa_consent" in response.data
+
+    def test_create_student_application_success(self, api_client):
+        url = reverse('application-list')
+        data = {
+            "applicant_type": "student",
+            "plan": "plan_6",
+            "full_name": "Jane Student",
+            "email": "jane.student@example.com",
+            "phone_number": "123456789",
+            "date_of_birth": "1999-06-15",
+            "gender": "F",
+            "nationality": "Malaysian",
+            "id_type": "passport",
+            "id_number": "S1234567",
+            "address_line_1": "456 Campus Street",
+            "city": "Kuala Lumpur",
+            "postcode": "50000",
+            "study_sponsor_type": "self_sponsored",
+            "study_level": "bachelor",
+            "university_name": "Test University",
+            "field_of_study": "Engineering",
+            "course_of_study": "Computer Science",
+            "expected_graduation": "2028-12-01",
+            "intended_duration_months": 24,
+            "pdpa_consent": True,
+            "terms_accepted": True
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_201_CREATED
+        app = Application.objects.get(email="jane.student@example.com")
+        assert app.applicant_type == "student"
+        assert app.is_student is True
+        assert app.occupation == "Student"

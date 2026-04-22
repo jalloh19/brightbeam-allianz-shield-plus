@@ -532,7 +532,18 @@ function submitForm(event) {
         console.error('Error:', error);
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
-        const errorMsg = error.detail || error.message || 'We could not submit your application. Please review your details and try again.';
+        let errorMsg = 'We could not submit your application. Please review your details and try again.';
+        if (error?.detail) {
+            errorMsg = error.detail;
+        } else if (error?.message) {
+            errorMsg = error.message;
+        } else if (error && typeof error === 'object') {
+            const firstKey = Object.keys(error)[0];
+            if (firstKey) {
+                const value = error[firstKey];
+                errorMsg = Array.isArray(value) ? value[0] : String(value);
+            }
+        }
         window.showAppNotice(errorMsg, 'error');
     });
 }
