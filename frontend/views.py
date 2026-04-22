@@ -12,7 +12,7 @@ def index(request):
 
 
 def form_view(request):
-    """Main 7-step form view."""
+    """Main 10-step form view."""
     context = {
         'UPLOADCARE_PUBLIC_KEY': settings.UPLOADCARE_PUBLIC_KEY,
     }

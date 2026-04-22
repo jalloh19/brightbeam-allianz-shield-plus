@@ -1,17 +1,35 @@
+// Handle Nationality change
+function handleNationalityChange(select) {
+    const otherInput = document.getElementById('nationality-other-input');
+    if (select.value === 'Other') {
+        otherInput.classList.remove('hidden');
+        window.formState.nationality = '';
+    } else {
+        otherInput.classList.add('hidden');
+        window.formState.nationality = select.value;
+    }
+    saveFormState();
+}
+
+function handleNationalityOtherInput(input) {
+    window.formState.nationality = input.value;
+    saveFormState();
+}
 /**
  * Main Form Engine - Handles step navigation, form state, and submission
  * Brightbeam Allianz Shield Plus Application
  */
 
 let currentStep = 1;
-const totalSteps = 9;
+const totalSteps = 10;
 
 function notifyForm(message, type = "error") {
     if (typeof window.showAppNotice === "function") {
         window.showAppNotice(message, type);
         return;
     }
-    console[type === "error" ? "error" : "log"](message);
+    // Fallback if showAppNotice not yet initialized
+    console[type === "error" ? "error" : type === "warning" ? "warn" : "log"](message);
 }
 
 // Initialize form on page load
@@ -253,7 +271,7 @@ function calculateStudyDuration() {
 
 // Prepare review page
 function prepareReview() {
-    if (currentStep !== totalSteps - 1) return;
+    if (currentStep !== 10) return;
     
     const reviewContent = document.getElementById('review-content');
     if (!reviewContent) return;
@@ -395,6 +413,12 @@ function prepareReview() {
             <p class="text-sm text-gray-700">${state.postcode} ${state.city}, ${state.state_province}</p>
             <p class="text-sm text-gray-700">${state.country}</p>
         </section>
+
+        <!-- Payment Method -->
+        <section class="border-t pt-4">
+            <h3 class="font-semibold text-gray-800 mb-3">Payment Method</h3>
+            <p class="text-sm font-semibold text-gray-800 uppercase">${(state.preferred_payment_method || 'not_selected').replace('_', ' ')}</p>
+        </section>
         </div>
     `;
     
@@ -429,23 +453,21 @@ function submitForm(event) {
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="spinner"></span> Submitting...';
     
-    // Prepare form data
-    const formData = new FormData();
-    const state = window.formState;
-    
-    // Map state to form fields
-    Object.keys(state).forEach(key => {
-        if (Array.isArray(state[key])) {
-            formData.append(key, JSON.stringify(state[key]));
-        } else if (state[key] !== null && state[key] !== undefined && state[key] !== '') {
-            formData.append(key, state[key]);
-        }
-    });
+    const state = { ...window.formState };
+    if (state.addons && Array.isArray(state.addons)) {
+        state.coverage_addons = {};
+        const costs = { 'employment_protection': 50, 'occupational_injury': 35, 'professional_liability': 40, 'family_coverage': 80, 'study_interruption': 50, 'education_protection': 40, 'family_emergency': 35, 'scholarship_protection': 60 };
+        state.addons.forEach(a => { if (costs[a]) state.coverage_addons[a] = costs[a]; });
+    }
     
     // Submit via AJAX
     fetch('/api/applications/', {
         method: 'POST',
-        body: formData,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(state),
     })
     .then(response => {
         if (!response.ok) {
@@ -459,27 +481,29 @@ function submitForm(event) {
         window.formState = {};
         
         // Show success page
-        currentStep = 9;
+        currentStep = 10;
         updateStepDisplay();
         
         // Populate success page
-        const successMsg = document.querySelector('#step-9');
+        const successMsg = document.querySelector('#step-10');
         if (successMsg) {
             successMsg.innerHTML = `
                 <div class="text-center py-12">
                     <div class="mb-6">
-                        <svg class="w-16 h-16 text-green-600 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                        </svg>
+                        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
                     </div>
                     
-                    <h2 class="text-3xl font-bold text-gray-800 mb-4">Application Submitted Successfully!</h2>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">Application Submitted!</h2>
                     
-                    <p class="text-xl text-gray-600 mb-8">Thank you for applying for Allianz Shield Plus</p>
+                    <p class="text-xl text-gray-600 mb-8">Thank you for choosing Allianz Shield Plus</p>
                     
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8 inline-block">
-                        <p class="text-sm text-gray-600 mb-2">Application Number</p>
-                        <p class="text-3xl font-bold text-blue-600">${data.application_number || 'ASP-2024-XXXXX'}</p>
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-8 mb-8 inline-block shadow-inner">
+                        <p class="text-sm text-blue-600 font-bold uppercase tracking-wider mb-2">Application Reference</p>
+                        <p class="text-4xl font-black text-blue-800">${data.application_number || 'ASP-2024-XXXXX'}</p>
                     </div>
                     
                     <div class="bg-gray-50 p-6 rounded-lg text-left mb-8 max-w-md mx-auto">
@@ -503,7 +527,8 @@ function submitForm(event) {
         console.error('Error:', error);
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
-        notifyForm('Error submitting application. Please try again.', 'error');
+        const errorMsg = error.detail || error.message || 'Error submitting application. Please try again.';
+        showAppNotice(errorMsg, 'error');
     });
 }
 
@@ -512,7 +537,8 @@ function submitForm(event) {
 async function handlePhotoUpload(fileInput) {
     /**
      * Handle passport photo upload with validation
-     * Uploads to Uploadcare CDN and stores URL in form state
+     * For prototype: generates data URL for local preview
+     * Production: would upload to Uploadcare CDN
      */
     const file = fileInput.files[0];
     if (!file) return;
@@ -527,30 +553,24 @@ async function handlePhotoUpload(fileInput) {
         const validation = await validatePhotoComplete(file);
         
         if (!validation.valid) {
-            showPhotoError('passport_photo_url', validation.errors.join('\n'));
-            fileInput.value = ''; // Clear file input
+            showAppNotice(validation.errors.join(', '), 'error');
+            fileInput.value = '';
             previewContainer.classList.add('hidden');
             urlInput.value = '';
             return;
         }
         
+        // Get public key from DOM
+        const publicKey = urlInput.getAttribute('data-public-key');
+        
         // Show loading state
-        const feedback = document.getElementById('passport_photo_url-error') || document.getElementById('passport_photo_url-success');
-        if (feedback) {
-            feedback.innerHTML = '<span>⏳ Uploading photo...</span>';
-            feedback.style.display = 'block';
-            feedback.className = 'text-blue-600 text-sm mt-2';
-        }
+        showAppNotice('Uploading to Allianz secure servers...', 'info');
         
         // Create FormData for upload
         const formData = new FormData();
         formData.append('file', file);
-        
-        // Get public key from DOM
-        const publicKey = urlInput.getAttribute('data-public-key');
-        if (publicKey) {
-            formData.append('UPLOADCARE_PUBLIC_KEY', publicKey);
-        }
+        formData.append('UPLOADCARE_PUB_KEY', publicKey || 'demopublickey');
+        formData.append('UPLOADCARE_STORE', '1');
         
         // Upload to Uploadcare
         const response = await fetch('https://upload.uploadcare.com/base/', {
@@ -559,7 +579,8 @@ async function handlePhotoUpload(fileInput) {
         });
         
         if (!response.ok) {
-            throw new Error(`Upload failed with status ${response.status}`);
+            const errorText = await response.text();
+            throw new Error(`Upload failed (${response.status}): ${errorText}`);
         }
         
         const result = await response.json();
@@ -582,18 +603,88 @@ async function handlePhotoUpload(fileInput) {
         
         // Show success message
         clearPhotoError('passport_photo_url');
-        showPhotoSuccess('passport_photo_url');
+        showAppNotice('Photo uploaded successfully!', 'success');
         
         // Save form state
         saveFormState();
         
     } catch (error) {
         console.error('Photo upload error:', error);
-        showPhotoError('passport_photo_url', `Upload failed: ${error.message}`);
+        showAppNotice(`Upload failed: ${error.message}`, 'error');
         fileInput.value = '';
         previewContainer.classList.add('hidden');
         urlInput.value = '';
     }
+}
+
+// ============ APP NOTIFICATIONS (CENTERED) ============
+
+function showAppNotice(message, type = 'info') {
+    /**
+     * Show centered notification popup
+     * Types: 'error', 'success', 'warning', 'info'
+     */
+    // Remove existing notice if any
+    const existing = document.getElementById('app-notice');
+    if (existing) {
+        existing.remove();
+    }
+    
+    const notice = document.createElement('div');
+    notice.id = 'app-notice';
+    notice.className = `fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 p-6 rounded-lg shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 ${
+        type === 'error' ? 'bg-red-50 border border-red-300' :
+        type === 'success' ? 'bg-green-50 border border-green-300' :
+        type === 'warning' ? 'bg-yellow-50 border border-yellow-300' :
+        'bg-blue-50 border border-blue-300'
+    }`;
+    
+    const icon = type === 'error' ? '✗' :
+                 type === 'success' ? '✓' :
+                 type === 'warning' ? '⚠' :
+                 'ℹ';
+    
+    const textColor = type === 'error' ? 'text-red-800' :
+                      type === 'success' ? 'text-green-800' :
+                      type === 'warning' ? 'text-yellow-800' :
+                      'text-blue-800';
+    
+    notice.innerHTML = `
+        <div class="flex items-start gap-3">
+            <span class="text-2xl">${icon}</span>
+            <div class="flex-1">
+                <p class="font-semibold ${textColor}">${message}</p>
+            </div>
+            <button onclick="document.getElementById('app-notice')?.remove()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+        </div>
+    `;
+    
+    document.body.appendChild(notice);
+    
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+        notice.style.opacity = '0';
+        notice.style.transform = 'translate(-50%, -50%) scale(0.9)';
+        setTimeout(() => notice.remove(), 300);
+    }, 4000);
+}
+
+window.showAppNotice = showAppNotice;
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 
 // Initialize on page load

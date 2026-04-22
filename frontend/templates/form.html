@@ -9,56 +9,62 @@
         <!-- Progress Bar -->
         <div class="mb-8">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-semibold text-gray-700">Step <span id="current-step-num">1</span> of 9</span>
-                <span class="text-sm text-gray-600"><span id="progress-percent">11</span>% Complete</span>
+                <span class="text-sm font-semibold text-gray-700">Step <span id="current-step-num">1</span> of 10</span>
+                <span class="text-sm text-gray-600"><span id="progress-percent">10</span>% Complete</span>
             </div>
             <div class="progress-bar">
-                <div class="progress-bar-fill" id="progress-fill" style="width: 11%"></div>
+                <div class="progress-bar-fill" id="progress-fill" style="width: 10%"></div>
             </div>
         </div>
 
         <!-- Step Indicators -->
-        <div class="grid grid-cols-9 gap-2 mb-8">
+        <div class="grid grid-cols-10 gap-2 mb-8">
             <div class="step-indicator active" data-step="1">
                 <div class="step-number">1</div>
-                <p class="step-label">Category</p>
+                <p class="step-label">Type</p>
             </div>
             <div class="step-indicator" data-step="2">
                 <div class="step-number">2</div>
-                <p class="step-label">Personal</p>
+                <p class="step-label">Category</p>
             </div>
             <div class="step-indicator" data-step="3">
                 <div class="step-number">3</div>
-                <p class="step-label">Contact</p>
+                <p class="step-label">Personal</p>
             </div>
             <div class="step-indicator" data-step="4">
                 <div class="step-number">4</div>
-                <p class="step-label">Details</p>
+                <p class="step-label">Contact</p>
             </div>
             <div class="step-indicator" data-step="5">
                 <div class="step-number">5</div>
-                <p class="step-label">Coverage</p>
+                <p class="step-label">Details</p>
             </div>
             <div class="step-indicator" data-step="6">
                 <div class="step-number">6</div>
-                <p class="step-label">Add-ons</p>
+                <p class="step-label">Plans</p>
             </div>
             <div class="step-indicator" data-step="7">
                 <div class="step-number">7</div>
-                <p class="step-label">Declaration</p>
+                <p class="step-label">Add-ons</p>
             </div>
             <div class="step-indicator" data-step="8">
                 <div class="step-number">8</div>
-                <p class="step-label">Review</p>
+                <p class="step-label">Payment</p>
             </div>
             <div class="step-indicator" data-step="9">
                 <div class="step-number">9</div>
-                <p class="step-label">Success</p>
+                <p class="step-label">Consent</p>
+            </div>
+            <div class="step-indicator" data-step="10">
+                <div class="step-number">10</div>
+                <p class="step-label">Review</p>
             </div>
         </div>
 
         <!-- Form Container -->
         <form id="asp-form" class="card">
+            <!-- 10-Step Progressive Application Form -->
+            
             <!-- Step 1: Category Selection -->
             <div class="form-step" id="step-1">
                 <h2 class="text-2xl font-bold text-gray-800 mb-2">Who Are You?</h2>
@@ -184,7 +190,7 @@
                     
                     <div>
                         <label class="form-label">Nationality *</label>
-                        <select name="nationality" class="form-select" required>
+                        <select name="nationality" class="form-select" id="nationality-select" required onchange="handleNationalityChange(this)">
                             <option value="">Select Your Nationality</option>
                             <option value="Malaysia">Malaysia</option>
                             <option value="China">China</option>
@@ -204,8 +210,9 @@
                             <option value="Australia">Australia</option>
                             <option value="South Korea">South Korea</option>
                             <option value="Japan">Japan</option>
-                            <option value="Other">Other</option>
+                            <option value="Other">Other (type below)</option>
                         </select>
+                        <input type="text" name="nationality_other" id="nationality-other-input" class="form-input mt-2 hidden" placeholder="Type your country..." oninput="handleNationalityOtherInput(this)">
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4">
@@ -669,9 +676,45 @@
                     </label>
                 </div>
             </div>
-
-            <!-- Step 8: Declaration & Consent -->
+            
+            <!-- Step 8: Payment Mode (Prototype) -->
             <div class="form-step hidden" id="step-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Payment Method</h2>
+                <p class="text-gray-600 mb-6">Select your preferred payment mode (Prototype)</p>
+                
+                <div class="space-y-4">
+                    <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-primary-light transition-colors">
+                        <input type="radio" name="preferred_payment_method" value="credit_card" class="w-5 h-5 text-primary">
+                        <div class="ml-4">
+                            <p class="font-semibold text-gray-800">Credit / Debit Card</p>
+                            <p class="text-sm text-gray-600">Visa, Mastercard, or AMEX</p>
+                        </div>
+                    </label>
+                    
+                    <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-primary-light transition-colors">
+                        <input type="radio" name="preferred_payment_method" value="online_banking" class="w-5 h-5 text-primary">
+                        <div class="ml-4">
+                            <p class="font-semibold text-gray-800">Online Banking (FPX)</p>
+                            <p class="text-sm text-gray-600">Maybank2u, CIMB Clicks, etc.</p>
+                        </div>
+                    </label>
+                    
+                    <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-primary-light transition-colors">
+                        <input type="radio" name="preferred_payment_method" value="e_wallet" class="w-5 h-5 text-primary">
+                        <div class="ml-4">
+                            <p class="font-semibold text-gray-800">E-Wallet</p>
+                            <p class="text-sm text-gray-600">Touch 'n Go, GrabPay, Boost</p>
+                        </div>
+                    </label>
+                </div>
+                
+                <div class="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    <p class="text-xs text-gray-500 italic">Note: This is a prototype. No actual payment will be processed at this stage.</p>
+                </div>
+            </div>
+
+            <!-- Step 9: Declaration & Consent -->
+            <div class="form-step hidden" id="step-9">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">Declaration & Consent</h2>
                 
                 <div class="space-y-4">
@@ -715,8 +758,8 @@
                 </div>
             </div>
 
-            <!-- Step 9: Review & Submit -->
-            <div class="form-step hidden" id="step-9">
+            <!-- Step 10: Review & Submit -->
+            <div class="form-step hidden" id="step-10">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">Review Your Application</h2>
                 
                 <div id="review-content" class="space-y-6">

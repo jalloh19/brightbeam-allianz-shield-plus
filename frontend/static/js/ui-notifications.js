@@ -8,7 +8,7 @@
     if (!container) {
       container = document.createElement("div");
       container.id = "app-toast-container";
-      container.className = "app-toast-container pointer-events-none";
+      container.className = "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] pointer-events-none flex flex-col items-center gap-4 w-full max-w-md px-4";
       document.body.appendChild(container);
     }
     return container;
@@ -24,7 +24,8 @@
   function showAppNotice(message, type = "info", duration = 4200) {
     const container = ensureContainer();
     const toast = document.createElement("div");
-    toast.className = `app-toast app-toast-${type} pointer-events-auto`;
+    toast.className = `app-toast app-toast-${type} pointer-events-auto bg-white shadow-2xl rounded-xl border-l-4 p-4 flex items-center gap-4 w-full transform transition-all duration-300 scale-95 opacity-0`;
+    setTimeout(() => { toast.classList.remove('scale-95', 'opacity-0'); toast.classList.add('scale-100', 'opacity-100'); }, 10);
     toast.setAttribute("role", "alert");
     toast.setAttribute("aria-live", "assertive");
 

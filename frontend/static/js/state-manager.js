@@ -17,6 +17,7 @@ window.formState = {
     preferred_name: '',
     date_of_birth: '',
     nationality: '',
+    nationality_other: '',
     gender: '',
     marital_status: '',
     id_type: '',
@@ -121,6 +122,16 @@ function updateFormStateFromFields() {
             window.formState[input.name] = input.value;
         }
     });
+    // Special handling for nationality
+    const natSelect = form.querySelector('select[name="nationality"]');
+    const natOther = form.querySelector('input[name="nationality_other"]');
+    if (natSelect && natOther) {
+        if (natSelect.value === 'Other') {
+            window.formState.nationality = natOther.value;
+        } else {
+            window.formState.nationality = natSelect.value;
+        }
+    }
     
     // Selects
     const selects = form.querySelectorAll('select');
@@ -165,6 +176,28 @@ function populateFormFields() {
     
     // Text inputs
     Object.keys(state).forEach(key => {
+        // Nationality special handling
+        if (key === 'nationality') {
+            const natSelect = form.querySelector('select[name="nationality"]');
+            const natOther = form.querySelector('input[name="nationality_other"]');
+            if (natSelect && natOther) {
+                const found = Array.from(natSelect.options).some(opt => opt.value === state.nationality);
+                if (found) {
+                    natSelect.value = state.nationality;
+                    natOther.classList.add('hidden');
+                    natOther.value = '';
+                } else if (state.nationality) {
+                    natSelect.value = 'Other';
+                    natOther.classList.remove('hidden');
+                    natOther.value = state.nationality;
+                } else {
+                    natSelect.value = '';
+                    natOther.classList.add('hidden');
+                    natOther.value = '';
+                }
+            }
+            return;
+        }
         const input = form.querySelector(`input[name="${key}"], select[name="${key}"], textarea[name="${key}"]`);
         if (input && typeof state[key] === 'string') {
             input.value = state[key];

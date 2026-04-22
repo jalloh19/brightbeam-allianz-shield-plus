@@ -197,8 +197,9 @@ class ApplicationSerializer(serializers.ModelSerializer):
         return value
     
     def validate_postcode(self, value):
-        """Validate Malaysia postcode format."""
-        if not value.isdigit() or len(value) != 5:
+        """Validate postcode format (5 digits for Malaysia)."""
+        country = self.initial_data.get('country', 'Malaysia')
+        if country == 'Malaysia' and (not value.isdigit() or len(value) != 5):
             raise serializers.ValidationError("Malaysian postcode must be 5 digits.")
         return value
     
