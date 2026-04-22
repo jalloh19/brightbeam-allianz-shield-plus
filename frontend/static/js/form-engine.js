@@ -32,6 +32,117 @@ function notifyForm(message, type = "error") {
     console[type === "error" ? "error" : type === "warning" ? "warn" : "log"](message);
 }
 
+const FIELD_STEP_MAP = {
+    applicant_type: 1,
+    worker_category: 2,
+    study_sponsor_type: 2,
+    full_name: 3,
+    date_of_birth: 3,
+    nationality: 3,
+    gender: 3,
+    id_type: 3,
+    id_number: 3,
+    passport_photo_url: 3,
+    email: 4,
+    phone_country_code: 4,
+    phone_number: 4,
+    address_line_1: 4,
+    address_line_2: 4,
+    city: 4,
+    state_province: 4,
+    postcode: 4,
+    country: 4,
+    occupation: 5,
+    industry: 5,
+    employer_name: 5,
+    monthly_salary: 5,
+    employment_type: 5,
+    work_permit_status: 5,
+    university_name: 5,
+    study_level: 5,
+    field_of_study: 5,
+    course_of_study: 5,
+    expected_graduation: 5,
+    plan: 6,
+    accuracy_confirmation: 9,
+    pdpa_consent: 9,
+    terms_accepted: 9,
+};
+
+function normalizeApiFieldMessage(value) {
+    if (!value) return "This field is invalid.";
+    if (Array.isArray(value)) return value[0] || "This field is invalid.";
+    return String(value);
+}
+
+function focusFirstApiError(apiErrors) {
+    if (!apiErrors || typeof apiErrors !== 'object') return;
+    const keys = Object.keys(apiErrors);
+    const firstField = keys.find(k => k && k !== 'detail' && k !== 'non_field_errors') || keys[0];
+    const step = FIELD_STEP_MAP[firstField];
+    if (step) {
+        goToStep(step);
+        window.setTimeout(() => {
+            const form = document.getElementById('asp-form');
+            const input = form ? form.querySelector(`[name="${firstField}"]`) : null;
+            if (input && typeof input.focus === 'function') input.focus();
+        }, 50);
+    }
+}
+
+function applyApiValidationErrors(apiErrors) {
+    if (!apiErrors || typeof apiErrors !== 'object') return;
+
+    // Clear any previous inline errors we can find (best-effort)
+    try {
+        const existing = document.querySelectorAll('[id^="error_"]');
+        existing.forEach(el => el.remove());
+        const fields = document.querySelectorAll('#asp-form .border-red-500');
+        fields.forEach(el => el.classList.remove('border-red-500'));
+    } catch (_e) {}
+
+    let bannerMsg = '';
+    Object.entries(apiErrors).forEach(([field, value]) => {
+        if (!field) return;
+        if (field === 'detail') {
+            bannerMsg = normalizeApiFieldMessage(value);
+            return;
+        }
+        if (field === 'non_field_errors') {
+            bannerMsg = normalizeApiFieldMessage(value);
+            return;
+        }
+        if (typeof window.showFieldError === 'function') {
+            window.showFieldError(field, normalizeApiFieldMessage(value));
+        }
+    });
+
+    // Duplicate email special-case (unique validator)
+    if (apiErrors.email) {
+        const msg = normalizeApiFieldMessage(apiErrors.email);
+        if (/already exists|unique/i.test(msg)) {
+            if (typeof window.showAppBanner === 'function') {
+                window.showAppBanner(
+                    'This email has already been used for an application. Please use a different email address, or contact support if you believe this is a mistake.',
+                    'warning'
+                );
+            }
+            notifyForm('Duplicate email detected. Please use a different email.', 'warning');
+            focusFirstApiError({ email: apiErrors.email });
+            return;
+        }
+    }
+
+    if (bannerMsg && typeof window.showAppBanner === 'function') {
+        window.showAppBanner(bannerMsg, 'error');
+    } else if (typeof window.showAppBanner === 'function') {
+        window.showAppBanner('Please review the highlighted fields and try again.', 'error');
+    }
+
+    notifyForm('Please fix the highlighted fields and resubmit.', 'error');
+    focusFirstApiError(apiErrors);
+}
+
 // Initialize form on page load
 function initializeForm() {
     loadFormState();
@@ -278,147 +389,178 @@ function prepareReview() {
     
     const state = window.formState;
     const isWorker = state.applicant_type === 'worker';
+    const isStudent = state.applicant_type === 'student';
+
+    const safe = (v) => {
+        if (v === null || v === undefined) return '-';
+        const s = String(v).trim();
+        return s ? s : '-';
+    };
+
+    const yesNo = (v) => (v ? 'Yes' : 'No');
+
+    const maskId = (idNumber) => {
+        const raw = (idNumber || '').toString();
+        if (!raw) return '-';
+        if (raw.length <= 4) return `****${raw}`;
+        return `****${raw.slice(-4)}`;
+    };
+
+    const renderRow = (label, value) => `
+        <div class="py-2">
+            <p class="text-gray-600 text-xs uppercase tracking-wide">${label}</p>
+            <p class="font-semibold text-gray-800 break-words">${safe(value)}</p>
+        </div>
+    `;
+
+    const hasValue = (v) => {
+        if (v === null || v === undefined) return false;
+        if (typeof v === 'boolean') return true;
+        const s = String(v).trim();
+        return s.length > 0;
+    };
+
+    const renderRowIfSet = (label, value) => (hasValue(value) ? renderRow(label, value) : '');
+
+    const renderSection = (title, rowsHtml) => `
+        <section class="border-t pt-4">
+            <h3 class="font-semibold text-gray-800 mb-3">${title}</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-sm">
+                ${rowsHtml}
+            </div>
+        </section>
+    `;
+
+    const planLabel = (plan) => {
+        if (plan === 'plan_5') return 'Plan 5 (RM360,000)';
+        if (plan === 'plan_6') return 'Plan 6 (RM600,000)';
+        if (plan === 'plan_7') return 'Plan 7 (RM900,000)';
+        return safe(plan).toUpperCase();
+    };
+
+    const applicantTypeLabel = (t) => {
+        if (t === 'worker') return 'Foreign Worker';
+        if (t === 'student') return 'Foreign Student';
+        return safe(t);
+    };
     
     let html = `
-        <div class="space-y-6">
-            <!-- Personal Information -->
-            <section class="border-t pt-4">
-                <h3 class="font-semibold text-gray-800 mb-3">Personal Information</h3>
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                        <p class="text-gray-600">Full Name</p>
-                        <p class="font-semibold text-gray-800">${state.full_name}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600">Age</p>
-                        <p class="font-semibold text-gray-800">${calculateAgeFromDOB(state.date_of_birth)} years</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600">Email</p>
-                        <p class="font-semibold text-gray-800">${state.email}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600">Phone</p>
-                        <p class="font-semibold text-gray-800">${state.phone_country_code}${state.phone_number}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600">Nationality</p>
-                        <p class="font-semibold text-gray-800">${state.nationality}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600">ID Type</p>
-                        <p class="font-semibold text-gray-800">${state.id_type} (****${state.id_number.slice(-4)})</p>
-                    </div>
-                </div>
-            </section>
-    `;
-    
-    if (isWorker) {
-        html += `
-            <!-- Employment Information -->
-            <section class="border-t pt-4">
-                <h3 class="font-semibold text-gray-800 mb-3">Employment Information</h3>
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                        <p class="text-gray-600">Category</p>
-                        <p class="font-semibold text-gray-800">Category ${state.worker_category.split('_')[1].toUpperCase()}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600">Occupation</p>
-                        <p class="font-semibold text-gray-800">${state.occupation}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600">Industry</p>
-                        <p class="font-semibold text-gray-800">${state.industry}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600">Employer</p>
-                        <p class="font-semibold text-gray-800">${state.employer_name}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600">Monthly Salary</p>
-                        <p class="font-semibold text-gray-800">RM${state.monthly_salary}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600">Employment Type</p>
-                        <p class="font-semibold text-gray-800">${state.employment_type}</p>
-                    </div>
-                </div>
-            </section>
-        `;
-    } else {
-        html += `
-            <!-- Education Information -->
-            <section class="border-t pt-4">
-                <h3 class="font-semibold text-gray-800 mb-3">Education Information</h3>
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                        <p class="text-gray-600">University</p>
-                        <p class="font-semibold text-gray-800">${state.university_name}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600">Sponsor Type</p>
-                        <p class="font-semibold text-gray-800">${state.study_sponsor_type}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600">Level of Study</p>
-                        <p class="font-semibold text-gray-800">${state.study_level}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600">Field</p>
-                        <p class="font-semibold text-gray-800">${state.field_of_study}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600">Course</p>
-                        <p class="font-semibold text-gray-800">${state.course_of_study}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600">Graduation Date</p>
-                        <p class="font-semibold text-gray-800">${state.expected_graduation}</p>
-                    </div>
-                </div>
-            </section>
-        `;
-    }
-    
-    html += `
-        <!-- Coverage Selection -->
-        <section class="border-t pt-4">
-            <h3 class="font-semibold text-gray-800 mb-3">Coverage Selected</h3>
-            <div class="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                    <p class="text-gray-600">Plan</p>
-                    <p class="font-semibold text-gray-800">${state.plan.toUpperCase()}</p>
-                </div>
-                <div>
-                    <p class="text-gray-600">Annual Premium</p>
-                    <p class="font-bold text-lg text-blue-600">RM${state.premium || 'calculating'}/year</p>
-                </div>
+        <div class="bg-white border border-gray-200 rounded-xl shadow-sm">
+            <div class="px-4 py-3 border-b border-gray-200">
+                <p class="text-sm text-gray-600">Review everything below. If something is wrong, go back and edit before submitting.</p>
             </div>
-            ${state.addons && state.addons.length > 0 ? `
-                <div class="mt-4">
-                    <p class="text-gray-600 mb-2">Add-ons Selected:</p>
-                    <ul class="space-y-1">
-                        ${state.addons.map(addon => `<li class="text-sm font-semibold text-gray-800">✓ ${addon}</li>`).join('')}
-                    </ul>
-                </div>
-            ` : ''}
-        </section>
-        
-        <!-- Address Information -->
-        <section class="border-t pt-4">
-            <h3 class="font-semibold text-gray-800 mb-3">Address</h3>
-            <p class="text-sm text-gray-700">${state.address_line_1}</p>
-            ${state.address_line_2 ? `<p class="text-sm text-gray-700">${state.address_line_2}</p>` : ''}
-            <p class="text-sm text-gray-700">${state.postcode} ${state.city}, ${state.state_province}</p>
-            <p class="text-sm text-gray-700">${state.country}</p>
-        </section>
+            <div class="p-4 max-h-[70vh] overflow-auto space-y-6">
+    `;
 
-        <!-- Payment Method -->
-        <section class="border-t pt-4">
-            <h3 class="font-semibold text-gray-800 mb-3">Payment Method</h3>
-            <p class="text-sm font-semibold text-gray-800 uppercase">${(state.preferred_payment_method || 'not_selected').replace('_', ' ')}</p>
-        </section>
+    // Applicant type / category (step 1-2)
+    let applicantRows = '';
+    applicantRows += renderRow('Applicant Type', applicantTypeLabel(state.applicant_type));
+    if (isWorker) {
+        applicantRows += renderRow('Worker Category', safe(state.worker_category));
+    }
+    if (isStudent) {
+        applicantRows += renderRow('Study Sponsor Type', safe(state.study_sponsor_type));
+    }
+    html += renderSection('Applicant Type', applicantRows);
+
+    // Personal + identification (step 3)
+    let personalRows = '';
+    personalRows += renderRow('Full Name', state.full_name);
+    personalRows += renderRowIfSet('Preferred Name', state.preferred_name);
+    personalRows += renderRow('Date of Birth', state.date_of_birth);
+    personalRows += renderRow('Age', `${calculateAgeFromDOB(state.date_of_birth)} years`);
+    personalRows += renderRow('Gender', state.gender);
+    personalRows += renderRowIfSet('Marital Status', state.marital_status);
+    personalRows += renderRow('Nationality', state.nationality);
+    html += renderSection('Personal Information', personalRows);
+
+    let idRows = '';
+    idRows += renderRow('Identification Type', state.id_type);
+    idRows += renderRow('ID Number', maskId(state.id_number));
+    idRows += renderRowIfSet('ID Issuing Country', state.id_issuing_country);
+    idRows += renderRowIfSet('ID Expiry Date', state.id_expiry_date);
+    idRows += renderRowIfSet('Visa Type', state.visa_type);
+    idRows += renderRowIfSet('Visa Number', state.visa_number);
+    idRows += renderRowIfSet('Visa Expiry Date', state.visa_expiry_date);
+    idRows += renderRow('Passport Photo URL', state.passport_photo_url);
+    idRows += renderRowIfSet('Passport Photo EXIF Date', state.passport_photo_exif_date);
+    html += renderSection('Identification & Visa', idRows);
+
+    // Contact & address (step 4)
+    let contactRows = '';
+    contactRows += renderRow('Email', state.email);
+    contactRows += renderRow('Phone Country Code', state.phone_country_code);
+    contactRows += renderRow('Phone Number', state.phone_number);
+    contactRows += renderRowIfSet('Contact Preference', state.contact_preference);
+    html += renderSection('Contact', contactRows);
+
+    let addressRows = '';
+    addressRows += renderRow('Address Line 1', state.address_line_1);
+    addressRows += renderRow('Address Line 2', state.address_line_2);
+    addressRows += renderRow('City', state.city);
+    addressRows += renderRow('State / Province', state.state_province);
+    addressRows += renderRow('Postcode', state.postcode);
+    addressRows += renderRow('Country', state.country);
+    html += renderSection('Address', addressRows);
+
+    // Worker / student details (step 5)
+    if (isWorker) {
+        let workerRows = '';
+        workerRows += renderRow('Occupation', state.occupation);
+        workerRows += renderRow('Industry', state.industry);
+        workerRows += renderRow('Employer Name', state.employer_name);
+        workerRows += renderRowIfSet('Employer Registration Number', state.employer_registration_number);
+        workerRows += renderRowIfSet('Monthly Salary', state.monthly_salary ? `RM${state.monthly_salary}` : state.monthly_salary);
+        workerRows += renderRow('Employment Type', state.employment_type);
+        workerRows += renderRow('Work Permit Status', state.work_permit_status);
+        workerRows += renderRowIfSet('Work Permit Expiry Date', state.work_permit_expiry_date);
+        workerRows += renderRowIfSet('Years of Experience', state.years_of_experience);
+        workerRows += renderRowIfSet('Professional License Number', state.professional_license_number);
+        workerRows += renderRowIfSet('Employer Sponsorship Approved', yesNo(state.employer_sponsorship_approved));
+        workerRows += renderRowIfSet('Work Environment', state.work_environment);
+        html += renderSection('Employment Details', workerRows);
+    }
+
+    if (isStudent) {
+        let studentRows = '';
+        studentRows += renderRow('University Name', state.university_name);
+        studentRows += renderRow('Study Level', state.study_level);
+        studentRows += renderRow('Field of Study', state.field_of_study);
+        studentRows += renderRow('Course of Study', state.course_of_study);
+        studentRows += renderRow('Expected Graduation', state.expected_graduation);
+        studentRows += renderRowIfSet('Intended Duration (Months)', state.intended_duration_months);
+        studentRows += renderRowIfSet('Semester Start Date', state.semester_start_date);
+        studentRows += renderRowIfSet('On-campus Residential', yesNo(state.on_campus_residential === true || state.on_campus_residential === 'true'));
+        studentRows += renderRowIfSet('Scholarship Name', state.scholarship_name);
+        studentRows += renderRowIfSet('Scholarship Award Amount', state.scholarship_award_amount);
+        studentRows += renderRowIfSet('Financial Proof Type', state.financial_proof_type);
+        studentRows += renderRowIfSet('Financial Proof Submitted', yesNo(state.financial_proof_submitted));
+        studentRows += renderRowIfSet('Employer Sponsoring Study', state.employer_sponsoring_study);
+        html += renderSection('Education Details', studentRows);
+    }
+
+    // Coverage & add-ons (step 6-7)
+    let coverageRows = '';
+    coverageRows += renderRow('Plan', planLabel(state.plan));
+    coverageRows += renderRow('Annual Premium', state.premium ? `RM${state.premium}/year` : 'calculating');
+    coverageRows += renderRow('Selected Add-ons', (state.addons && state.addons.length) ? state.addons.join(', ') : 'None');
+    html += renderSection('Coverage & Premium', coverageRows);
+
+    // Payment (step 8)
+    let paymentRows = '';
+    paymentRows += renderRow('Preferred Payment Method', (state.preferred_payment_method || 'not_selected').replace('_', ' '));
+    html += renderSection('Payment', paymentRows);
+
+    // Consents (step 9)
+    let consentRows = '';
+    consentRows += renderRow('Accuracy Confirmation', yesNo(state.accuracy_confirmation));
+    consentRows += renderRow('PDPA Consent', yesNo(state.pdpa_consent));
+    consentRows += renderRow('Terms Accepted', yesNo(state.terms_accepted));
+    consentRows += renderRow('Marketing Opt-in', yesNo(state.marketing_opt_in));
+    html += renderSection('Consents', consentRows);
+
+    html += `
+            </div>
         </div>
     `;
     
@@ -441,6 +583,12 @@ function calculateAgeFromDOB(dob) {
 // Submit form
 function submitForm(event) {
     event.preventDefault();
+
+    // Prevent accidental double-submission
+    if (window.__aspSubmissionInFlight) {
+        notifyForm('Submission is already in progress. Please wait a moment.', 'info');
+        return;
+    }
     
     if (!validateStep(totalSteps)) {
         notifyForm('Please complete all required fields.', 'warning');
@@ -452,6 +600,7 @@ function submitForm(event) {
     const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="spinner"></span> Submitting...';
+    window.__aspSubmissionInFlight = true;
     
     // Prepare form data using centralized state manager
     const data = getFormSubmissionData();
@@ -530,21 +679,23 @@ function submitForm(event) {
     })
     .catch(error => {
         console.error('Error:', error);
+        // If DRF returned field errors, render them inline.
+        if (error && typeof error === 'object' && !Array.isArray(error)) {
+            applyApiValidationErrors(error);
+            return;
+        }
+
+        // Otherwise show a friendly generic message
+        const errorMsg = (error && (error.detail || error.message)) || 'We could not submit your application right now. Please try again in a moment.';
+        if (typeof window.showAppBanner === 'function') {
+            window.showAppBanner(errorMsg, 'error');
+        }
+        notifyForm(errorMsg, 'error');
+    })
+    .finally(() => {
+        window.__aspSubmissionInFlight = false;
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
-        let errorMsg = 'We could not submit your application. Please review your details and try again.';
-        if (error?.detail) {
-            errorMsg = error.detail;
-        } else if (error?.message) {
-            errorMsg = error.message;
-        } else if (error && typeof error === 'object') {
-            const firstKey = Object.keys(error)[0];
-            if (firstKey) {
-                const value = error[firstKey];
-                errorMsg = Array.isArray(value) ? value[0] : String(value);
-            }
-        }
-        window.showAppNotice(errorMsg, 'error');
     });
 }
 

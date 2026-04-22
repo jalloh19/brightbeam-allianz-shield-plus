@@ -112,7 +112,8 @@ def get_analytics(request):
     applicant_rows = list(Application.objects.values('applicant_type').annotate(count=Count('id')))
     applicant_distribution_map = {row['applicant_type']: row['count'] for row in applicant_rows}
 
-    pending_review = Application.objects.filter(status='under_review').count()
+    # Pending review includes newly submitted applications not yet decided.
+    pending_review = Application.objects.filter(status__in=['submitted', 'under_review']).count()
     
     # Conversion rate (approved vs total)
     approved_count = Application.objects.filter(status='approved').count()

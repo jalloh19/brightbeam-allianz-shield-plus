@@ -154,14 +154,14 @@
 {% block content %}
 <div class="min-h-screen bg-gray-50">
   <!-- Header -->
-  <div class="bg-gradient-to-r from-primary-dark to-primary-dark text-white">
+  <div class="text-white" style="background: linear-gradient(110deg, #0b2a5e, #1f5ec7 58%, #1ea7c5);">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex justify-between items-start mb-4">
         <div>
           <h1 class="text-3xl font-bold">Application Review</h1>
           <p id="app_number" class="text-blue-100 mt-1">Application #</p>
         </div>
-        <a href="{% url 'ops:applications' %}" class="px-4 py-2 bg-primary-dark hover:bg-primary rounded-lg">
+        <a href="{% url 'ops:applications' %}" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20">
           ← Back to Applications
         </a>
       </div>
@@ -631,6 +631,8 @@
       window.showAppNotice(successMessage, 'success');
       closeModal();
       loadApplication();
+      // Trigger KPI refresh on dashboard (even in other tabs)
+      try { localStorage.setItem('asp_admin_metrics_bust', String(Date.now())); } catch (_e) {}
     })
     .catch(error => {
       console.error('Error:', error);

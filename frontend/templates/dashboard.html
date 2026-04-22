@@ -34,9 +34,6 @@
   .card-applications {
     border-color: var(--brand-blue);
   }
-  .card-submitted {
-    border-color: var(--brand-navy);
-  }
   .card-pending {
     border-color: #F59E0B;
   }
@@ -82,7 +79,7 @@
     </div>
 
     <!-- KPI Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
       <!-- Total Applications -->
       <div class="dashboard-card card-applications">
         <div class="flex justify-between items-start">
@@ -100,20 +97,20 @@
         <p class="text-xs text-gray-500 mt-4">All time total</p>
       </div>
 
-      <!-- Submitted This Week -->
-      <div class="dashboard-card card-submitted">
+      <!-- Total Approved -->
+      <div class="dashboard-card card-approval">
         <div class="flex justify-between items-start">
           <div>
-            <p class="text-gray-600 text-sm font-medium">Submitted This Week</p>
-            <p id="kpi_submitted_week" class="text-4xl font-bold text-primary-dark mt-2">0</p>
+            <p class="text-gray-600 text-sm font-medium">Total Approved</p>
+            <p id="kpi_total_approved" class="text-4xl font-bold text-green-600 mt-2">0</p>
           </div>
-          <div class="bg-blue-100 p-3 rounded-lg">
-            <svg class="w-6 h-6 text-primary-dark" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.3A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z"></path>
+          <div class="bg-green-100 p-3 rounded-lg">
+            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
             </svg>
           </div>
         </div>
-        <p class="text-xs text-gray-500 mt-4">Last 7 days</p>
+        <p class="text-xs text-gray-500 mt-4">All time total</p>
       </div>
 
       <!-- Pending Review -->
@@ -130,6 +127,22 @@
           </div>
         </div>
         <p class="text-xs text-gray-500 mt-4">Waiting for review</p>
+      </div>
+
+      <!-- Total Rejected -->
+      <div class="dashboard-card" style="border-left-color: #EF4444;">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-gray-600 text-sm font-medium">Total Rejected</p>
+            <p id="kpi_total_rejected" class="text-4xl font-bold text-red-600 mt-2">0</p>
+          </div>
+          <div class="bg-red-100 p-3 rounded-lg">
+            <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+            </svg>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-4">All time total</p>
       </div>
 
       <!-- Approval Rate -->

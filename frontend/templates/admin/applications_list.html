@@ -24,7 +24,7 @@
 {% block content %}
 <div class="min-h-screen bg-gray-50">
   <!-- Header -->
-  <div class="bg-gradient-to-r from-primary-dark to-primary-dark text-white">
+  <div class="text-white" style="background: linear-gradient(110deg, #0b2a5e, #1f5ec7 58%, #1ea7c5);">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 class="text-3xl font-bold">Applications</h1>
       <p class="text-blue-100 mt-2">Manage insurance applications</p>
@@ -362,6 +362,8 @@
       window.showAppNotice(`Application ${successVerb} successfully.`, 'success');
       closeModal();
       loadApplications();
+      // Trigger KPI refresh on dashboard (even in other tabs)
+      try { localStorage.setItem('asp_admin_metrics_bust', String(Date.now())); } catch (_e) {}
     })
     .catch(error => {
       console.error('Error:', error);

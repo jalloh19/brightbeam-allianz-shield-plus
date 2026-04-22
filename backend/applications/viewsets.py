@@ -70,10 +70,18 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
         except ValidationError:
             # Railway edge logs often omit response bodies; log validation details server-side.
+            payload = getattr(request, "data", None)
+            if isinstance(payload, dict):
+                payload_summary = {"type": "dict", "keys": sorted(payload.keys())}
+            elif isinstance(payload, list):
+                payload_summary = {"type": "list", "length": len(payload)}
+            else:
+                payload_summary = {"type": type(payload).__name__}
+
             logger.warning(
-                "Application submission rejected (400). ip=%s keys=%s errors=%s",
+                "Application submission rejected (400). ip=%s payload=%s errors=%s",
                 self.get_client_ip(request),
-                sorted(list(getattr(request, "data", {}) or {}).keys()),
+                payload_summary,
                 serializer.errors,
             )
             raise

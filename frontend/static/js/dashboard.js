@@ -8,6 +8,13 @@ function initializeDashboard() {
   console.log('Initializing admin dashboard...');
   loadAnalyticsData();
   setInterval(refreshAnalyticsData, 60000); // Refresh every minute
+
+  // Refresh KPIs/charts when another tab approves/rejects
+  window.addEventListener('storage', function (e) {
+    if (e && e.key === 'asp_admin_metrics_bust') {
+      refreshAnalyticsData();
+    }
+  });
 }
 
 function loadAnalyticsData() {
@@ -42,22 +49,33 @@ function updateKPICards(data) {
   document.getElementById('kpi_total_applications').textContent = 
     data.total_applications.toLocaleString();
 
-  // Submitted This Week
-  document.getElementById('kpi_submitted_week').textContent = 
-    (data.submitted_this_week || 0).toLocaleString();
+  // Total Approved
+  const approved = (data.status_breakdown?.approved || data.approved_applications || 0);
+  const elApproved = document.getElementById('kpi_total_approved');
+  if (elApproved) elApproved.textContent = approved.toLocaleString();
 
   // Pending Review
   document.getElementById('kpi_pending_review').textContent = 
     (data.pending_review || 0).toLocaleString();
 
+  // Total Rejected
+  const rejected = (data.status_breakdown?.rejected || 0);
+  const elRejected = document.getElementById('kpi_total_rejected');
+  if (elRejected) elRejected.textContent = rejected.toLocaleString();
+
   // Approval Rate
   const approvalRate = data.total_applications > 0 
-    ? Math.round(((data.status_breakdown?.approved || 0) / data.total_applications) * 100)
+    ? Math.round((approved / data.total_applications) * 100)
     : 0;
   document.getElementById('kpi_approval_rate').textContent = `${approvalRate}%`;
 
   console.log('KPI cards updated');
 }
+
+// Expose for other pages (and debugging)
+window.refreshAnalyticsData = refreshAnalyticsData;
+window.loadAnalyticsData = loadAnalyticsData;
+window.updateKPICards = updateKPICards;
 
 function initializeCharts(data) {
   // Destroy existing charts if they exist
