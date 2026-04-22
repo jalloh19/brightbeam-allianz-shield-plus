@@ -157,9 +157,9 @@ Must support:
 
 ### Coverage / Plan Section
 
-- Selected plan confirmation
-- Optional add-ons (recommended)
-- Family cover option (recommended)
+- [x] Selected plan confirmation
+- [x] Optional add-ons (recommended)
+- [x] Family cover option (recommended)
 
 ### Payment Section
 
@@ -187,23 +187,23 @@ These are not explicitly required but increase score significantly.
 
 ## Nominee / Beneficiary Section
 
-- Full name
-- Relationship
-- Contact number
-- ID number
+- [x] Full name
+- [x] Relationship
+- [x] Contact number
+- [x] ID number
 
 ## Eligibility Questions
 
 Yes / No declarations:
 
-- Existing disability
-- Current hospitalization
-- Hazardous occupation
-- Hazardous sports activity
+- [x] Existing disability
+- [x] Current hospitalization
+- [x] Hazardous occupation
+- [x] Hazardous sports activity
 
 ## Review Before Submit
 
-Display final summary before submission.
+- [x] Display final summary before submission.
 
 ---
 

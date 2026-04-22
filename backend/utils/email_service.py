@@ -25,8 +25,8 @@ class ResendEmailService:
         if not api_key:
             logger.warning("RESEND_API_KEY not found in environment variables")
         resend.api_key = api_key
-        self.from_email = os.getenv('RESEND_FROM_EMAIL', 'noreply@allianzshield.com')
-        self.reply_to = os.getenv('RESEND_REPLY_TO', 'support@allianzshield.com')
+        self.from_email = os.getenv('RESEND_FROM_EMAIL', 'noreply@resend.dev')
+        self.reply_to = os.getenv('RESEND_REPLY_TO', 'support@resend.dev')
     
     def send_confirmation_email(self, recipient: str, full_name: str, application_number: str) -> Dict:
         """
