@@ -389,6 +389,7 @@ class ApplicationListSerializer(serializers.ModelSerializer):
         model = Application
         fields = [
             'id',
+            'application_number',
             'full_name',
             'email',
             'plan',
