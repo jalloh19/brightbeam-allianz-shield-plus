@@ -45,11 +45,21 @@ def admin_dashboard_view(request):
     app_type_rows = list(Application.objects.values('applicant_type').annotate(count=Count('id')))
     app_type_map = {str(row['applicant_type']).title(): row['count'] for row in app_type_rows}
 
+    # 5. Trend Data (Last 30 days)
+    end_date = timezone.now().date()
+    start_date = end_date - timedelta(days=29)
+    trend_rows = Application.objects.filter(
+        created_at__date__gte=start_date
+    ).values('created_at__date').annotate(count=Count('id')).order_by('created_at__date')
+    
+    trend_map = {str(row['created_at__date']): row['count'] for row in trend_rows}
+    
     chart_data = {
         'total_applications': total_apps,
         'status_breakdown': status_map,
         'plan_distribution': plan_map,
         'applicant_distribution': app_type_map,
+        'trend_data': trend_map,
     }
 
     context = {

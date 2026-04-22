@@ -152,12 +152,15 @@ function initializeCharts(data) {
   // Submission Trend Line Chart (mock data for now)
   initializeTrendChart(data);
 }
-
 function initializePlanChart(data) {
   const ctx = document.getElementById('planChart');
   if (!ctx) return;
 
-  const planData = data.plan_distribution || {};
+  const planData = {};
+  Object.keys(data.plan_distribution || {}).forEach(k => {
+    planData[k.replace(/\s+/g, '_').toLowerCase()] = data.plan_distribution[k];
+  });
+
   charts.plan = new Chart(ctx, {
     type: 'doughnut',
     data: {
@@ -232,20 +235,23 @@ function initializeStatusChart(data) {
 
   console.log('Status chart initialized');
 }
-
 function initializeApplicantChart(data) {
   const ctx = document.getElementById('applicantChart');
   if (!ctx) return;
 
-  const applicantData = data.applicant_distribution || {};
+  const applicantData = {};
+  Object.keys(data.applicant_distribution || {}).forEach(k => {
+    applicantData[k.toLowerCase()] = data.applicant_distribution[k];
+  });
+
   charts.applicant = new Chart(ctx, {
     type: 'doughnut',
     data: {
       labels: ['Workers', 'Students'],
       datasets: [{
         data: [
-          applicantData.worker || 0,
-          applicantData.student || 0
+          applicantData.worker || applicantData.workers || 0,
+          applicantData.student || applicantData.students || 0
         ],
         backgroundColor: [
           '#0051BA', // Allianz primary (workers)
@@ -273,9 +279,22 @@ function initializeTrendChart(data) {
   const ctx = document.getElementById('trendChart');
   if (!ctx) return;
 
-  // Generate 30-day trend data
-  const labels = getLast30Days();
-  const trendData = generateTrendData(labels);
+  const trendDataMap = data.trend_data || {};
+  
+  // Generate last 30 days labels and match with real data
+  const labels = [];
+  const counts = [];
+  
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    
+    // Label format: DD MMM (e.g. 23 Apr)
+    const label = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    labels.push(label);
+    counts.push(trendDataMap[dateStr] || 0);
+  }
 
   charts.trend = new Chart(ctx, {
     type: 'line',
@@ -283,7 +302,7 @@ function initializeTrendChart(data) {
       labels: labels,
       datasets: [{
         label: 'Applications Submitted',
-        data: trendData,
+        data: counts,
         borderColor: '#0051BA',
         backgroundColor: 'rgba(0, 81, 186, 0.05)',
         borderWidth: 2,
