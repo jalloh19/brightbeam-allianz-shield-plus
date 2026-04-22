@@ -456,12 +456,13 @@ function submitForm(event) {
     // Prepare form data using centralized state manager
     const data = getFormSubmissionData();
     
-    // Ensure numeric fields are correctly typed
-    data.monthly_salary = data.monthly_salary ? parseFloat(data.monthly_salary) : 0;
-    data.intended_duration_months = data.intended_duration_months ? parseInt(data.intended_duration_months) : 0;
-    data.years_of_experience = data.years_of_experience ? parseInt(data.years_of_experience) : 0;
+    // Ensure numeric fields are correctly typed (send null if empty to avoid 400 error)
+    data.monthly_salary = (data.monthly_salary && data.monthly_salary !== '') ? parseFloat(data.monthly_salary) : null;
+    data.intended_duration_months = (data.intended_duration_months && data.intended_duration_months !== '') ? parseInt(data.intended_duration_months) : null;
+    data.years_of_experience = (data.years_of_experience && data.years_of_experience !== '') ? parseInt(data.years_of_experience) : null;
+    data.scholarship_award_amount = (data.scholarship_award_amount && data.scholarship_award_amount !== '') ? parseFloat(data.scholarship_award_amount) : null;
     
-    // Final check for student flag
+    // Final check for student flag (must match backend expectation)
     data.is_student = (data.applicant_type === 'student');
     
     // Submit via AJAX
