@@ -37,10 +37,14 @@ function initializeDashboard() {
 
   // Refresh when navigating back to this tab (e.g. from detail page)
   window.addEventListener('pageshow', function(event) {
-    if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
-      console.log('Navigated back to dashboard, refreshing data...');
+    // Many browsers no longer reliably expose performance.navigation.type.
+    // We always re-check the metrics bust key and refresh if needed.
+    if (event && event.persisted) {
+      console.log('Dashboard restored from bfcache, refreshing data...');
       refreshAnalyticsData();
+      return;
     }
+    maybeRefreshFromBust('pageshow');
   });
 
   // Refresh KPIs/charts when another tab approves/rejects
