@@ -4,6 +4,11 @@ Frontend views for serving HTML templates.
 
 from django.shortcuts import render
 from django.conf import settings
+from django.utils import timezone
+import json
+from backend.applications.models import Application
+from django.db.models import Q, Count
+from datetime import timedelta
 
 
 def index(request):
