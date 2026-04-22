@@ -21,7 +21,7 @@ function loadAnalyticsData() {
       updateKPICards(data);
       
       // Initialize charts
-      initializeCharts(data);Simple File Upload
+      initializeCharts(data);
       
       // Load recent applications
       loadRecentApplications();
@@ -44,15 +44,15 @@ function updateKPICards(data) {
 
   // Submitted This Week
   document.getElementById('kpi_submitted_week').textContent = 
-    data.submitted_this_week;
+    (data.submitted_this_week || 0).toLocaleString();
 
   // Pending Review
   document.getElementById('kpi_pending_review').textContent = 
-    data.pending_review;
+    (data.pending_review || 0).toLocaleString();
 
   // Approval Rate
   const approvalRate = data.total_applications > 0 
-    ? Math.round((data.status_breakdown.approved / data.total_applications) * 100)
+    ? Math.round(((data.status_breakdown?.approved || 0) / data.total_applications) * 100)
     : 0;
   document.getElementById('kpi_approval_rate').textContent = `${approvalRate}%`;
 

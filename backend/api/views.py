@@ -100,14 +100,19 @@ def get_analytics(request):
     week_ago = timezone.now() - timedelta(days=7)
     week_apps = Application.objects.filter(created_at__gte=week_ago).count()
     
-    # Status breakdown
-    status_breakdown = Application.objects.values('status').annotate(count=Count('id'))
-    
-    # Average premium by plan
-    plan_stats = Application.objects.values('plan').annotate(
-        count=Count('id'),
-        avg_premium=Count('calculated_premium'),
-    )
+    # Status breakdown (both list and keyed map for frontend compatibility)
+    status_rows = list(Application.objects.values('status').annotate(count=Count('id')))
+    status_breakdown_map = {row['status']: row['count'] for row in status_rows}
+
+    # Plan distribution (both list and keyed map)
+    plan_rows = list(Application.objects.values('plan').annotate(count=Count('id')))
+    plan_distribution_map = {row['plan']: row['count'] for row in plan_rows}
+
+    # Applicant type distribution
+    applicant_rows = list(Application.objects.values('applicant_type').annotate(count=Count('id')))
+    applicant_distribution_map = {row['applicant_type']: row['count'] for row in applicant_rows}
+
+    pending_review = Application.objects.filter(status='under_review').count()
     
     # Conversion rate (approved vs total)
     approved_count = Application.objects.filter(status='approved').count()
@@ -116,10 +121,16 @@ def get_analytics(request):
     analytics_data = {
         'total_applications': total_apps,
         'applications_this_week': week_apps,
+        'submitted_this_week': week_apps,
+        'pending_review': pending_review,
         'approved_applications': approved_count,
         'conversion_rate': round(conversion_rate, 2),
-        'status_breakdown': list(status_breakdown),
-        'plan_distribution': list(plan_stats),
+        'status_breakdown': status_breakdown_map,
+        'status_breakdown_rows': status_rows,
+        'plan_distribution': plan_distribution_map,
+        'plan_distribution_rows': plan_rows,
+        'applicant_distribution': applicant_distribution_map,
+        'applicant_distribution_rows': applicant_rows,
     }
     
     return Response(analytics_data, status=status.HTTP_200_OK)

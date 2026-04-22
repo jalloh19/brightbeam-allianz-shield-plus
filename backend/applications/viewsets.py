@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django.utils import timezone
-from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from .models import Application, AuditLog, PaymentRecord, Beneficiary, NotificationLog
 from .serializers import ApplicationSerializer, ApplicationListSerializer, AuditLogSerializer
 
@@ -83,8 +83,8 @@ class ApplicationViewSet(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         """
-        List all applications (admin only).
-        Supports filtering and searching.
+        List all applications.
+        Supports filtering, searching, and safe ordering.
         """
         queryset = self.filter_queryset(self.get_queryset())
         
@@ -97,9 +97,41 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         search = request.query_params.get('search')
         if search:
             queryset = queryset.filter(
-                models.Q(full_name__icontains=search) | 
-                models.Q(email__icontains=search)
+                Q(full_name__icontains=search) |
+                Q(email__icontains=search)
             )
+
+        # Filter by plan/applicant type (used by admin UI)
+        plan = request.query_params.get('plan')
+        if plan:
+            queryset = queryset.filter(plan=plan)
+
+        applicant_type = request.query_params.get('applicant_type')
+        if applicant_type:
+            queryset = queryset.filter(applicant_type=applicant_type)
+
+        # Filter by created date range if provided (YYYY-MM-DD)
+        date_from = request.query_params.get('date_from')
+        if date_from:
+            queryset = queryset.filter(created_at__date__gte=date_from)
+
+        date_to = request.query_params.get('date_to')
+        if date_to:
+            queryset = queryset.filter(created_at__date__lte=date_to)
+
+        # Safe ordering whitelist to prevent FieldError from bad query params
+        allowed_ordering = {
+            'submitted_at', '-submitted_at',
+            'created_at', '-created_at',
+            'full_name', '-full_name',
+            'status', '-status',
+            'calculated_premium', '-calculated_premium',
+        }
+        ordering = request.query_params.get('ordering')
+        if ordering in allowed_ordering:
+            queryset = queryset.order_by(ordering)
+        else:
+            queryset = queryset.order_by('-submitted_at', '-created_at')
         
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -232,6 +264,3 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             ip = request.META.get('REMOTE_ADDR')
         return ip
 
-
-# Import models for queries in list view
-from django.db import models

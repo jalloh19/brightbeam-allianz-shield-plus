@@ -6,14 +6,36 @@
 {% block extra_css %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  .dashboard-card {
-    @apply bg-white rounded-lg shadow-md p-6 border-l-4;
+  :root {
+    --brand-navy: #0b2a5e;
+    --brand-blue: #1f5ec7;
+    --brand-cyan: #1ea7c5;
+    --surface: #f3f6fb;
   }
+
+  body {
+    background:
+      radial-gradient(900px 300px at 15% -10%, rgba(31, 94, 199, 0.18), transparent 60%),
+      radial-gradient(700px 240px at 85% -10%, rgba(30, 167, 197, 0.14), transparent 60%),
+      var(--surface);
+  }
+
+  .dashboard-card {
+    @apply bg-white rounded-2xl p-6 border-l-4;
+    box-shadow: 0 10px 24px rgba(13, 35, 67, 0.08);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+
+  .dashboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 30px rgba(13, 35, 67, 0.12);
+  }
+
   .card-applications {
-    border-color: #0051BA;
+    border-color: var(--brand-blue);
   }
   .card-submitted {
-    border-color: #003DA5;
+    border-color: var(--brand-navy);
   }
   .card-pending {
     border-color: #F59E0B;
@@ -25,16 +47,21 @@
     position: relative;
     height: 300px;
   }
+
+  .surface-panel {
+    @apply bg-white rounded-2xl;
+    box-shadow: 0 10px 24px rgba(13, 35, 67, 0.08);
+  }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen">
   <!-- Header -->
-  <div class="bg-gradient-to-r from-blue-900 to-blue-800 text-white">
+  <div class="text-white" style="background: linear-gradient(110deg, var(--brand-navy), var(--brand-blue) 58%, var(--brand-cyan));">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 class="text-3xl font-bold">Admin Dashboard</h1>
-      <p class="text-blue-100 mt-2">Allianz Shield Plus Application Management</p>
+      <h1 class="text-3xl font-bold tracking-tight">Operations Dashboard</h1>
+      <p class="text-blue-100 mt-2">Allianz Shield Plus application pipeline and performance</p>
     </div>
   </div>
 
@@ -42,7 +69,7 @@
     <!-- Top Navigation -->
     <div class="flex justify-between items-center mb-8">
       <div class="flex space-x-4">
-        <a href="{% url 'ops:dashboard' %}" class="px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800">
+        <a href="{% url 'ops:dashboard' %}" class="px-4 py-2 text-white rounded-lg hover:opacity-90" style="background-color: var(--brand-navy);">
           Dashboard
         </a>
         <a href="{% url 'ops:applications' %}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
@@ -125,7 +152,7 @@
     <!-- Charts Section -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
       <!-- Plan Distribution Pie Chart -->
-      <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="surface-panel p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Applications by Plan</h3>
         <div class="chart-container">
           <canvas id="planChart"></canvas>
@@ -133,7 +160,7 @@
       </div>
 
       <!-- Status Distribution Pie Chart -->
-      <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="surface-panel p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Status Breakdown</h3>
         <div class="chart-container">
           <canvas id="statusChart"></canvas>
@@ -141,7 +168,7 @@
       </div>
 
       <!-- Applicant Type Pie Chart -->
-      <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="surface-panel p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Applicant Distribution</h3>
         <div class="chart-container">
           <canvas id="applicantChart"></canvas>
@@ -150,7 +177,7 @@
     </div>
 
     <!-- Submission Trend Chart -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+    <div class="surface-panel p-6 mb-8">
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Submission Trend (Last 30 Days)</h3>
       <div style="position: relative; height: 400px;">
         <canvas id="trendChart"></canvas>
@@ -158,7 +185,7 @@
     </div>
 
     <!-- Recent Applications Table -->
-    <div class="bg-white rounded-lg shadow-md">
+    <div class="surface-panel">
       <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h3 class="text-lg font-semibold text-gray-900">Recent Applications</h3>
         <a href="{% url 'ops:applications' %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
