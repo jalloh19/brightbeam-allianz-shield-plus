@@ -78,10 +78,10 @@
       </div>
     </div>
 
-    <!-- KPI Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+    <!-- KPI Cards (single horizontal row; scrolls on small screens) -->
+    <div class="flex flex-nowrap gap-4 mb-8 overflow-x-auto pb-2">
       <!-- Total Applications -->
-      <div class="dashboard-card card-applications">
+      <div class="dashboard-card card-applications min-w-[240px] flex-1">
         <div class="flex justify-between items-start">
           <div>
             <p class="text-gray-600 text-sm font-medium">Total Applications</p>
@@ -98,7 +98,7 @@
       </div>
 
       <!-- Total Approved -->
-      <div class="dashboard-card card-approval">
+      <div class="dashboard-card card-approval min-w-[240px] flex-1">
         <div class="flex justify-between items-start">
           <div>
             <p class="text-gray-600 text-sm font-medium">Total Approved</p>
@@ -114,7 +114,7 @@
       </div>
 
       <!-- Pending Review -->
-      <div class="dashboard-card card-pending">
+      <div class="dashboard-card card-pending min-w-[240px] flex-1">
         <div class="flex justify-between items-start">
           <div>
             <p class="text-gray-600 text-sm font-medium">Pending Review</p>
@@ -130,7 +130,7 @@
       </div>
 
       <!-- Total Rejected -->
-      <div class="dashboard-card" style="border-left-color: #EF4444;">
+      <div class="dashboard-card min-w-[240px] flex-1" style="border-left-color: #EF4444;">
         <div class="flex justify-between items-start">
           <div>
             <p class="text-gray-600 text-sm font-medium">Total Rejected</p>
@@ -146,7 +146,7 @@
       </div>
 
       <!-- Approval Rate -->
-      <div class="dashboard-card card-approval">
+      <div class="dashboard-card card-approval min-w-[240px] flex-1">
         <div class="flex justify-between items-start">
           <div>
             <p class="text-gray-600 text-sm font-medium">Approval Rate</p>
