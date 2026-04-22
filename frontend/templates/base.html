@@ -146,6 +146,9 @@
     </style>
     
     {% block extra_head %}{% endblock %}
+    
+    <!-- Uploadcare Widget for file uploads -->
+    <link href="https://ucarecdn.com/libs/widget/3.x/uploadcare.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
     <!-- Navigation -->
@@ -215,5 +218,8 @@
 
     <!-- Main Scripts -->
     {% block extra_js %}{% endblock %}
+    
+    <!-- Uploadcare Widget SDK -->
+    <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.min.js"></script>
 </body>
 </html>

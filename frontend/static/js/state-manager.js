@@ -21,6 +21,8 @@ window.formState = {
     marital_status: '',
     id_type: '',
     id_number: '',
+    passport_photo_url: '',
+    passport_photo_exif_date: '',
     
     // Contact information
     email: '',
@@ -283,6 +285,7 @@ function getFormSubmissionData() {
         nationality: state.nationality,
         id_type: state.id_type,
         id_number: state.id_number,
+        passport_photo_url: state.passport_photo_url,
         address_line_1: state.address_line_1,
         address_line_2: state.address_line_2,
         city: state.city,

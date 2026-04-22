@@ -223,6 +223,10 @@ LOGGING = {
     },
 }
 
+# Uploadcare Configuration (for passport photo uploads)
+UPLOADCARE_PUBLIC_KEY = os.getenv('UPLOADCARE_PUBLIC_KEY', '')
+UPLOADCARE_SECRET_KEY = os.getenv('UPLOADCARE_SECRET_KEY', '')
+
 # Ensure logs directory exists
 LOGS_DIR = BASE_DIR / 'logs'
 LOGS_DIR.mkdir(exist_ok=True)

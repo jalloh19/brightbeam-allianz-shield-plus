@@ -4,6 +4,7 @@ Frontend views for serving HTML templates.
 
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.conf import settings
 
 
 def index(request):
@@ -13,4 +14,7 @@ def index(request):
 
 def form_view(request):
     """Main 7-step form view."""
-    return render(request, 'form.html')
+    context = {
+        'UPLOADCARE_PUBLIC_KEY': settings.UPLOADCARE_PUBLIC_KEY,
+    }
+    return render(request, 'form.html', context)

@@ -187,6 +187,26 @@ class Application(models.Model):
     visa_expiry_date = models.DateField(null=True, blank=True, help_text="Visa/Work permit expiration date")
     visa_number = models.CharField(max_length=100, blank=True)
     
+    # ============ PASSPORT PHOTO & DOCUMENTS ============
+    passport_photo_url = models.URLField(
+        null=True,
+        blank=True,
+        help_text="Uploadcare CDN URL for passport photo"
+    )
+    
+    passport_photo_upload_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        auto_now_add=False,
+        help_text="Timestamp when photo was uploaded"
+    )
+    
+    passport_photo_exif_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="EXIF metadata date from photo (extracted on client)"
+    )
+    
     # ============ ADDRESS ============
     address_line_1 = models.CharField(max_length=255)
     address_line_2 = models.CharField(max_length=255, blank=True)
@@ -431,6 +451,8 @@ class AuditLog(models.Model):
         ('rejected', 'Rejected'),
         ('deleted', 'Deleted'),
         ('viewed', 'Viewed'),
+        ('photo_uploaded', 'Photo Uploaded'),
+        ('pdf_exported', 'PDF Exported'),
     ]
     
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='audit_logs')

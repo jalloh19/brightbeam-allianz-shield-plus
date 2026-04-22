@@ -185,6 +185,37 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         serializer = AuditLogSerializer(audit_logs, many=True)
         return Response(serializer.data)
     
+    @action(detail=True, methods=['get'], permission_classes=[permissions.IsAdminUser])
+    def export_pdf(self, request, id=None):
+        """
+        Export application as PDF document (admin only).
+        Returns PDF file with all application details.
+        """
+        from django.http import FileResponse
+        from backend.services import ApplicationPDFGenerator
+        
+        application = self.get_object()
+        
+        # Generate PDF
+        pdf_generator = ApplicationPDFGenerator(application)
+        pdf_bytes = pdf_generator.generate_pdf()
+        
+        # Log PDF export in audit trail
+        AuditLog.objects.create(
+            application=application,
+            action='pdf_exported',
+            user=request.user.username,
+            ip_address=self.get_client_ip(request),
+        )
+        
+        # Return PDF file
+        filename = f"ASP-{application.application_number}-{timezone.now().strftime('%Y%m%d')}.pdf"
+        
+        response = FileResponse(pdf_bytes, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        return response
+    
     def get_client_ip(self, request):
         """Extract client IP address from request."""
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')

@@ -83,6 +83,9 @@ class ApplicationSerializer(serializers.ModelSerializer):
             'id_number',
             'id_expiry_date',
             'id_issuing_country',
+            'passport_photo_url',
+            'passport_photo_upload_date',
+            'passport_photo_exif_date',
             'visa_type',
             'visa_expiry_date',
             'visa_number',
@@ -173,6 +176,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
             'submitted_at',
+            'passport_photo_upload_date',
             'beneficiaries',
             'payment',
             'notifications',
@@ -272,8 +276,28 @@ class ApplicationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Years of experience cannot be negative.")
         return value
     
+    def validate_passport_photo_url(self, value):
+        """Validate passport photo URL is from Uploadcare CDN."""
+        if not value:
+            # Photo is optional during form filling, only required on submission
+            return value
+        
+        # Check that URL is from Uploadcare CDN
+        if not isinstance(value, str) or 'ucarecdn.com' not in value:
+            raise serializers.ValidationError("Photo must be uploaded through Uploadcare service. Invalid URL provided.")
+        
+        # Basic URL format check
+        if not value.startswith('http'):
+            raise serializers.ValidationError("Invalid URL format for photo.")
+        
+        return value
+    
     def create(self, validated_data):
-        """Override create to set data retention expiry (7 years from now)."""
+        """Override create to set data retention expiry (7 years from now) and photo upload date."""
+        # Set photo upload date if photo URL is provided
+        if validated_data.get('passport_photo_url') and not validated_data.get('passport_photo_upload_date'):
+            validated_data['passport_photo_upload_date'] = timezone.now()
+        
         instance = Application.objects.create(**validated_data)
         instance.data_retention_expiry = timezone.now().date() + timedelta(days=365*7)
         instance.save()

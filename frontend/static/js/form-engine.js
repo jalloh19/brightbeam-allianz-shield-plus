@@ -499,6 +499,95 @@ function submitForm(event) {
     });
 }
 
+// ============ PASSPORT PHOTO UPLOAD ============
+
+async function handlePhotoUpload(fileInput) {
+    /**
+     * Handle passport photo upload with validation
+     * Uploads to Uploadcare CDN and stores URL in form state
+     */
+    const file = fileInput.files[0];
+    if (!file) return;
+    
+    const container = document.getElementById('passport-photo-container');
+    const previewContainer = document.getElementById('photo-preview-container');
+    const preview = document.getElementById('photo-preview');
+    const urlInput = document.getElementById('passport_photo_url');
+    
+    try {
+        // Validate photo
+        const validation = await validatePhotoComplete(file);
+        
+        if (!validation.valid) {
+            showPhotoError('passport_photo_url', validation.errors.join('\n'));
+            fileInput.value = ''; // Clear file input
+            previewContainer.classList.add('hidden');
+            urlInput.value = '';
+            return;
+        }
+        
+        // Show loading state
+        const feedback = document.getElementById('passport_photo_url-error') || document.getElementById('passport_photo_url-success');
+        if (feedback) {
+            feedback.innerHTML = '<span>⏳ Uploading photo...</span>';
+            feedback.style.display = 'block';
+            feedback.className = 'text-blue-600 text-sm mt-2';
+        }
+        
+        // Create FormData for upload
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // Get public key from DOM
+        const publicKey = urlInput.getAttribute('data-public-key');
+        if (publicKey) {
+            formData.append('UPLOADCARE_PUBLIC_KEY', publicKey);
+        }
+        
+        // Upload to Uploadcare
+        const response = await fetch('https://upload.uploadcare.com/base/', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Upload failed with status ${response.status}`);
+        }
+        
+        const result = await response.json();
+        const photoUrl = result.file ? `https://ucarecdn.com/${result.file}/` : null;
+        
+        if (!photoUrl) {
+            throw new Error('No photo URL returned from upload');
+        }
+        
+        // Update form state
+        window.formState.passport_photo_url = photoUrl;
+        if (validation.exifDate) {
+            window.formState.passport_photo_exif_date = validation.exifDate.toISOString().split('T')[0];
+        }
+        urlInput.value = photoUrl;
+        
+        // Show preview
+        preview.src = photoUrl;
+        previewContainer.classList.remove('hidden');
+        
+        // Show success message
+        clearPhotoError('passport_photo_url');
+        showPhotoSuccess('passport_photo_url');
+        
+        // Save form state
+        saveFormState();
+        
+    } catch (error) {
+        console.error('Photo upload error:', error);
+        showPhotoError('passport_photo_url', `Upload failed: ${error.message}`);
+        fileInput.value = '';
+        previewContainer.classList.add('hidden');
+        urlInput.value = '';
+    }
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     initializeForm();

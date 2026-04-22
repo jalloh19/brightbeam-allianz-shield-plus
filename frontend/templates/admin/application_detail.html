@@ -28,6 +28,126 @@
   .info-value {
     @apply text-gray-900;
   }
+  
+  /* Spinner for async operations */
+  .spinner-small {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  /* Button loading state */
+  #download-pdf-btn.loading {
+    @apply opacity-75;
+  }
+  
+  /* Notification Toast Styles */
+  .notification-container {
+    z-index: 9999;
+  }
+  
+  .notification {
+    @apply bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden;
+    animation: slideIn 0.3s ease-out;
+  }
+  
+  .notification.fade-out {
+    animation: slideOut 0.3s ease-in;
+  }
+  
+  .notification-content {
+    @apply flex items-center gap-3 p-4;
+  }
+  
+  .notification-icon {
+    @apply font-bold text-lg;
+  }
+  
+  .notification-message {
+    @apply flex-1;
+  }
+  
+  .notification-close {
+    @apply text-gray-500 hover:text-gray-700 font-bold text-xl leading-none cursor-pointer;
+  }
+  
+  .notification-success {
+    @apply border-l-4 border-green-500 bg-green-50;
+  }
+  
+  .notification-success .notification-icon {
+    @apply text-green-600;
+  }
+  
+  .notification-success .notification-message {
+    @apply text-green-800;
+  }
+  
+  .notification-error {
+    @apply border-l-4 border-red-500 bg-red-50;
+  }
+  
+  .notification-error .notification-icon {
+    @apply text-red-600;
+  }
+  
+  .notification-error .notification-message {
+    @apply text-red-800;
+  }
+  
+  .notification-warning {
+    @apply border-l-4 border-yellow-500 bg-yellow-50;
+  }
+  
+  .notification-warning .notification-icon {
+    @apply text-yellow-600;
+  }
+  
+  .notification-warning .notification-message {
+    @apply text-yellow-800;
+  }
+  
+  .notification-info {
+    @apply border-l-4 border-blue-500 bg-blue-50;
+  }
+  
+  .notification-info .notification-icon {
+    @apply text-blue-600;
+  }
+  
+  .notification-info .notification-message {
+    @apply text-blue-800;
+  }
+  
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideOut {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
 </style>
 {% endblock %}
 
@@ -200,6 +320,11 @@
             <!-- Request Info Button -->
             <button onclick="openApprovalModal('request_info')" id="btn_request" class="w-full px-4 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium hidden">
               ? Request More Info
+            </button>
+
+            <!-- Download PDF Button -->
+            <button onclick="downloadPDF(getApplicationId())" id="download-pdf-btn" class="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+              📥 Download PDF
             </button>
 
             <!-- Status: Approved/Rejected -->
@@ -540,7 +665,21 @@
     return cookieValue;
   }
 
+  function getApplicationId() {
+    /**
+     * Extract application ID from the page URL or data attribute
+     */
+    const urlMatch = window.location.pathname.match(/\/admin\/applications\/([^\/]+)/);
+    if (urlMatch) {
+      return urlMatch[1];
+    }
+    return '';
+  }
+
   // Load on page load
   document.addEventListener('DOMContentLoaded', loadApplication);
 </script>
+
+<!-- Admin Actions Script -->
+<script src="{% static 'js/admin-actions.js' %}"></script>
 {% endblock %}

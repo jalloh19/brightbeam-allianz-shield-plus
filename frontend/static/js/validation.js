@@ -19,18 +19,20 @@ const validationRules = {
         }
     },
     3: {
-        fields: ['full_name', 'date_of_birth', 'nationality', 'gender', 'id_type', 'id_number'],
+        fields: ['full_name', 'date_of_birth', 'nationality', 'gender', 'id_type', 'id_number', 'passport_photo_url'],
         messages: {
             full_name: 'Please enter your full name',
             date_of_birth: 'Please enter a valid date of birth (must be 18+)',
             nationality: 'Please select your nationality',
             gender: 'Please select your gender',
             id_type: 'Please select your ID type',
-            id_number: 'Please enter your ID number'
+            id_number: 'Please enter your ID number',
+            passport_photo_url: 'Please upload a valid passport photo'
         },
         validators: {
             date_of_birth: validateAge,
-            id_number: validateIDNumber
+            id_number: validateIDNumber,
+            passport_photo_url: validatePassportPhotoField
         }
     },
     4: {
@@ -267,6 +269,24 @@ function validateCheckbox(checked) {
     return { valid: true };
 }
 
+function validatePassportPhotoField(fieldName) {
+    /**
+     * Validate passport photo field
+     * Checks if photo URL has been successfully uploaded
+     */
+    const photoUrl = document.getElementById('passport_photo_url');
+    if (!photoUrl || !photoUrl.value) {
+        return { valid: false, message: 'Please upload a passport photo' };
+    }
+    
+    // Check if URL is from Uploadcare
+    if (!photoUrl.value.includes('ucarecdn.com')) {
+        return { valid: false, message: 'Photo must be uploaded through the system' };
+    }
+    
+    return { valid: true };
+}
+
 // Attach real-time validation listeners
 function attachValidationListeners() {
     const form = document.getElementById('asp-form');
@@ -302,3 +322,4 @@ window.validatePostcode = validatePostcode;
 window.validateAge = validateAge;
 window.validateIDNumber = validateIDNumber;
 window.validateCheckbox = validateCheckbox;
+window.validatePassportPhotoField = validatePassportPhotoField;
