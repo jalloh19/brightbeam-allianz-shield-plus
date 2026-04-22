@@ -14,6 +14,6 @@ urlpatterns = [
     path('data/id-types/', views.get_id_types, name='id_types'),
     
     # Analytics endpoints (admin only)
-    path('admin/analytics/', views.get_analytics, name='analytics'),
+    path('admin/dashboard-stats/', views.get_analytics, name='get_analytics'),
     path('admin/analytics/dropoff/', views.get_dropoff_analysis, name='dropoff_analysis'),
 ]

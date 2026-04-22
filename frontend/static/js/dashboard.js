@@ -67,11 +67,24 @@ function initializeDashboard() {
 }
 
 function loadAnalyticsData() {
-  fetch(`/api/admin/analytics/?t=${Date.now()}`)
-    .then(response => response.json())
+  const log = (msg) => {
+    const logEl = document.getElementById('diagnostic_logs');
+    if (logEl) {
+      const div = document.createElement('div');
+      div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      logEl.prepend(div);
+    }
+  };
+  
+  log('Fetching dashboard stats...');
+  fetch(`/api/admin/dashboard-stats/?t=${Date.now()}`)
+    .then(response => {
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return response.json();
+    })
     .then(data => {
       analyticsData = data;
-      console.log('Analytics data loaded:', data);
+      log('Stats loaded successfully.');
       
       // Update KPI cards
       updateKPICards(data);
@@ -85,7 +98,16 @@ function loadAnalyticsData() {
       // Update timestamp
       updateLastRefreshTime();
     })
-    .catch(error => console.error('Error loading analytics:', error));
+    .catch(error => {
+      console.error('Error loading stats:', error);
+      const logEl = document.getElementById('diagnostic_logs');
+      if (logEl) {
+        const div = document.createElement('div');
+        div.style.color = '#ef4444';
+        div.textContent = `[${new Date().toLocaleTimeString()}] CRITICAL ERROR: ${error.message}. The request may be blocked by an AdBlocker.`;
+        logEl.prepend(div);
+      }
+    });
 }
 
 function refreshAnalyticsData() {
