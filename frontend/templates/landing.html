@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}Allianz Shield Plus - Insurance Application{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12 md:py-20">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-5xl font-bold mb-4">Protect Your Stay in Malaysia</h2>
+            <p class="text-lg md:text-xl text-blue-100 mb-2">24/7 Worldwide Accident Insurance for Foreign Workers & Students</p>
+            <p class="text-blue-100">Coverage from Day 1 • Instant Approval • Hassle-Free Claims</p>
+        </div>
+    </div>
+</div>
+
+<div class="max-w-6xl mx-auto px-4 py-12">
+    <!-- Plan Selection -->
+    <div class="mb-12">
+        <h3 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 text-center">Choose Your Coverage Level</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <!-- Plan 5 -->
+            <div class="card hover:shadow-xl cursor-pointer group" onclick="selectPlan('plan_5')">
+                <div class="mb-4">
+                    <h4 class="text-2xl font-bold text-blue-600 mb-2">Plan 5</h4>
+                    <p class="text-gray-600">Coverage Up To</p>
+                    <p class="text-4xl font-bold text-gray-800 mt-2">RM360,000</p>
+                    <p class="text-sm text-gray-500 mt-2">from RM30/month</p>
+                </div>
+                
+                <div class="border-t pt-4 mb-4">
+                    <ul class="space-y-3 text-sm text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-600 font-bold mt-0.5">✓</span>
+                            <span>Accidental Death: RM200,000</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-600 font-bold mt-0.5">✓</span>
+                            <span>Permanent Disability: RM200,000</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-600 font-bold mt-0.5">✓</span>
+                            <span>Medical Expenses: RM50,000</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-600 font-bold mt-0.5">✓</span>
+                            <span>Emergency Hospitalization</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <button class="w-full btn-outline group-hover:bg-blue-50 transition-colors">
+                    Select Plan
+                </button>
+            </div>
+            
+            <!-- Plan 6 (Most Popular) -->
+            <div class="card hover:shadow-xl cursor-pointer group border-2 border-blue-600 relative" onclick="selectPlan('plan_6')">
+                <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <span class="badge badge-success">Most Popular</span>
+                </div>
+                
+                <div class="mb-4 pt-2">
+                    <h4 class="text-2xl font-bold text-blue-600 mb-2">Plan 6</h4>
+                    <p class="text-gray-600">Coverage Up To</p>
+                    <p class="text-4xl font-bold text-gray-800 mt-2">RM600,000</p>
+                    <p class="text-sm text-gray-500 mt-2">from RM40/month</p>
+                </div>
+                
+                <div class="border-t pt-4 mb-4">
+                    <ul class="space-y-3 text-sm text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-600 font-bold mt-0.5">✓</span>
+                            <span>Accidental Death: RM400,000</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-600 font-bold mt-0.5">✓</span>
+                            <span>Permanent Disability: RM400,000</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-600 font-bold mt-0.5">✓</span>
+                            <span>Medical Expenses: RM80,000</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-600 font-bold mt-0.5">✓</span>
+                            <span>Emergency Hospitalization + Cashless</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
+                    Select Plan
+                </button>
+            </div>
+            
+            <!-- Plan 7 -->
+            <div class="card hover:shadow-xl cursor-pointer group" onclick="selectPlan('plan_7')">
+                <div class="mb-4">
+                    <h4 class="text-2xl font-bold text-blue-600 mb-2">Plan 7</h4>
+                    <p class="text-gray-600">Coverage Up To</p>
+                    <p class="text-4xl font-bold text-gray-800 mt-2">RM900,000</p>
+                    <p class="text-sm text-gray-500 mt-2">from RM60/month</p>
+                </div>
+                
+                <div class="border-t pt-4 mb-4">
+                    <ul class="space-y-3 text-sm text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-600 font-bold mt-0.5">✓</span>
+                            <span>Accidental Death: RM600,000</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-600 font-bold mt-0.5">✓</span>
+                            <span>Permanent Disability: RM600,000</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-600 font-bold mt-0.5">✓</span>
+                            <span>Medical Expenses: RM120,000</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-600 font-bold mt-0.5">✓</span>
+                            <span>Premium Emergency Hospitalization</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <button class="w-full btn-outline group-hover:bg-blue-50 transition-colors">
+                    Select Plan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="mb-12">
+        <h3 class="text-2xl font-bold text-gray-800 mb-8 text-center">Why Allianz Shield Plus?</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-2xl">🌍</span>
+                </div>
+                <h4 class="font-semibold text-gray-800 mb-2">24/7 Global Coverage</h4>
+                <p class="text-gray-600 text-sm">Protected anywhere, anytime, worldwide</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-2xl">⚡</span>
+                </div>
+                <h4 class="font-semibold text-gray-800 mb-2">Instant Approval</h4>
+                <p class="text-gray-600 text-sm">Get coverage within 24 hours</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-2xl">🏥</span>
+                </div>
+                <h4 class="font-semibold text-gray-800 mb-2">Cashless Hospital</h4>
+                <p class="text-gray-600 text-sm">Network of 3000+ hospitals in Malaysia</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-2xl">✅</span>
+                </div>
+                <h4 class="font-semibold text-gray-800 mb-2">Hassle-Free Claims</h4>
+                <p class="text-gray-600 text-sm">Fast and simple claims process</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Special Offer -->
+    <div class="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-8 text-center mb-12">
+        <h3 class="text-2xl font-bold text-gray-800 mb-2">🎉 25th Anniversary Special Bonus</h3>
+        <p class="text-lg text-gray-700 mb-2"><span class="font-bold text-2xl text-yellow-600">25% Discount</span> on annual premiums</p>
+        <p class="text-sm text-gray-600 mb-4">Valid until December 31, 2026</p>
+        <p class="text-xs text-gray-500">Terms and conditions apply</p>
+    </div>
+
+    <!-- CTA -->
+    <div class="text-center">
+        <h3 class="text-2xl font-bold text-gray-800 mb-4">Ready to Get Protected?</h3>
+        <p class="text-gray-600 mb-8">Complete our simple 8-step application in under 10 minutes</p>
+        <button class="btn-primary text-lg px-8 py-3" onclick="startApplication()">
+            Start Application Now →
+        </button>
+    </div>
+</div>
+
+<script>
+    function selectPlan(plan) {
+        localStorage.setItem('asp_selected_plan', plan);
+        startApplication();
+    }
+    
+    function startApplication() {
+        // Initialize form state
+        window.formState = {
+            applicant_type: null,
+            worker_category: null,
+            study_sponsor_type: null,
+            full_name: '',
+            preferred_name: '',
+            email: '',
+            phone_country_code: '+60',
+            phone_number: '',
+            date_of_birth: '',
+            nationality: '',
+            gender: '',
+            marital_status: '',
+            id_type: 'passport',
+            id_number: '',
+            country: 'Malaysia',
+            city: '',
+            postcode: '',
+            address_line_1: '',
+            address_line_2: '',
+            occupaton: '',
+            industry: '',
+            employer_name: '',
+            monthly_salary: '',
+            employment_type: '',
+            plan: localStorage.getItem('asp_selected_plan') || 'plan_6',
+            addons: [],
+            premium: 0,
+            current_step: 1,
+            completed_steps: []
+        };
+        
+        // Redirect to form
+        window.location.href = '/form/';
+    }
+</script>
+{% endblock %}

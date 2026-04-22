@@ -1,0 +1,759 @@
+{% extends 'base.html' %}
+
+{% block title %}Allianz Shield Plus - Application Form{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8 md:py-12">
+    <div class="max-w-2xl mx-auto px-4">
+        <!-- Progress Bar -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold text-gray-700">Step <span id="current-step-num">1</span> of 9</span>
+                <span class="text-sm text-gray-600"><span id="progress-percent">11</span>% Complete</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-bar-fill" id="progress-fill" style="width: 11%"></div>
+            </div>
+        </div>
+
+        <!-- Step Indicators -->
+        <div class="grid grid-cols-9 gap-2 mb-8">
+            <div class="step-indicator active" data-step="1">
+                <div class="step-number">1</div>
+                <p class="step-label">Category</p>
+            </div>
+            <div class="step-indicator" data-step="2">
+                <div class="step-number">2</div>
+                <p class="step-label">Personal</p>
+            </div>
+            <div class="step-indicator" data-step="3">
+                <div class="step-number">3</div>
+                <p class="step-label">Contact</p>
+            </div>
+            <div class="step-indicator" data-step="4">
+                <div class="step-number">4</div>
+                <p class="step-label">Details</p>
+            </div>
+            <div class="step-indicator" data-step="5">
+                <div class="step-number">5</div>
+                <p class="step-label">Coverage</p>
+            </div>
+            <div class="step-indicator" data-step="6">
+                <div class="step-number">6</div>
+                <p class="step-label">Add-ons</p>
+            </div>
+            <div class="step-indicator" data-step="7">
+                <div class="step-number">7</div>
+                <p class="step-label">Declaration</p>
+            </div>
+            <div class="step-indicator" data-step="8">
+                <div class="step-number">8</div>
+                <p class="step-label">Review</p>
+            </div>
+            <div class="step-indicator" data-step="9">
+                <div class="step-number">9</div>
+                <p class="step-label">Success</p>
+            </div>
+        </div>
+
+        <!-- Form Container -->
+        <form id="asp-form" class="card">
+            <!-- Step 1: Category Selection -->
+            <div class="form-step" id="step-1">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Who Are You?</h2>
+                <p class="text-gray-600 mb-6">Choose the category that best describes you</p>
+                
+                <div class="space-y-4">
+                    <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors" onclick="selectCategory('worker')">
+                        <input type="radio" name="applicant_type" value="worker" class="w-5 h-5 text-blue-600">
+                        <div class="ml-4">
+                            <p class="font-semibold text-gray-800">Foreign Worker</p>
+                            <p class="text-sm text-gray-600">Apply for employment-based coverage. Track work permits, employment details, and more.</p>
+                        </div>
+                    </label>
+                    
+                    <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors" onclick="selectCategory('student')">
+                        <input type="radio" name="applicant_type" value="student" class="w-5 h-5 text-blue-600">
+                        <div class="ml-4">
+                            <p class="font-semibold text-gray-800">Foreign Student</p>
+                            <p class="text-sm text-gray-600">Apply for education-based coverage. Study interruption protection and special student benefits.</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Step 2: Worker Category or Student Sponsor Type -->
+            <div class="form-step hidden" id="step-2">
+                <!-- Worker Category Selection -->
+                <div id="worker-category-section" class="hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">What's Your Job Level?</h2>
+                    <p class="text-gray-600 mb-6">Select the category that best matches your role</p>
+                    
+                    <div class="space-y-4">
+                        <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors" onclick="selectWorkerCategory('category_1')">
+                            <input type="radio" name="worker_category" value="category_1" class="w-5 h-5 text-blue-600 mt-1">
+                            <div class="ml-4">
+                                <p class="font-semibold text-gray-800">Category 1: High-Skilled Professional</p>
+                                <p class="text-sm text-gray-600 mb-2">Bachelor degree or higher • 5+ years experience • Salary RM6,000+</p>
+                                <p class="text-xs text-gray-500">Examples: Engineer, Doctor, IT Manager, Architect, Finance Executive</p>
+                                <p class="text-xs font-semibold text-green-600 mt-2">✓ Best rates • All plans available • Professional benefits</p>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors" onclick="selectWorkerCategory('category_2')">
+                            <input type="radio" name="worker_category" value="category_2" class="w-5 h-5 text-blue-600 mt-1">
+                            <div class="ml-4">
+                                <p class="font-semibold text-gray-800">Category 2: Skilled Technician</p>
+                                <p class="text-sm text-gray-600 mb-2">Diploma or technical cert • 2-5 years experience • Salary RM3,000-6,000</p>
+                                <p class="text-xs text-gray-500">Examples: Electrician, Plumber, Chef, Supervisor, Technician</p>
+                                <p class="text-xs font-semibold text-blue-600 mt-2">✓ Moderate rates • Plans 5-6 • Occupational benefits</p>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors" onclick="selectWorkerCategory('category_3')">
+                            <input type="radio" name="worker_category" value="category_3" class="w-5 h-5 text-blue-600 mt-1">
+                            <div class="ml-4">
+                                <p class="font-semibold text-gray-800">Category 3: General Worker</p>
+                                <p class="text-sm text-gray-600 mb-2">Secondary education • 0+ years experience • Salary RM1,500-3,500</p>
+                                <p class="text-xs text-gray-500">Examples: Assistant, Factory Worker, Cleaner, Retail Staff, Helper</p>
+                                <p class="text-xs font-semibold text-orange-600 mt-2">✓ Flexible rates • Plans 5-6 • Entry-level welcome</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Student Sponsor Type Selection -->
+                <div id="student-sponsor-section" class="hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">How Is Your Education Funded?</h2>
+                    <p class="text-gray-600 mb-6">Select your sponsorship type for the best coverage</p>
+                    
+                    <div class="space-y-4">
+                        <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors" onclick="selectStudentSponsor('self_sponsored')">
+                            <input type="radio" name="study_sponsor_type" value="self_sponsored" class="w-5 h-5 text-blue-600 mt-1">
+                            <div class="ml-4">
+                                <p class="font-semibold text-gray-800">Self-Sponsored</p>
+                                <p class="text-sm text-gray-600 mb-2">Personal or family savings • Proof: Bank statement</p>
+                                <p class="text-xs font-semibold text-gray-700 mt-2">✓ All plans • Standard rates • Study protection</p>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors" onclick="selectStudentSponsor('scholarship')">
+                            <input type="radio" name="study_sponsor_type" value="scholarship" class="w-5 h-5 text-blue-600 mt-1">
+                            <div class="ml-4">
+                                <p class="font-semibold text-gray-800">Scholarship-Funded</p>
+                                <p class="text-sm text-gray-600 mb-2">University or government scholarship • Proof: Award letter</p>
+                                <p class="text-xs font-semibold text-green-600 mt-2">✓ All plans • 10% discount • Enhanced protection</p>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors" onclick="selectStudentSponsor('employer_sponsored')">
+                            <input type="radio" name="study_sponsor_type" value="employer_sponsored" class="w-5 h-5 text-blue-600 mt-1">
+                            <div class="ml-4">
+                                <p class="font-semibold text-gray-800">Employer-Sponsored</p>
+                                <p class="text-sm text-gray-600 mb-2">Employer funding • Proof: Employment contract</p>
+                                <p class="text-xs font-semibold text-green-600 mt-2">✓ All plans • 5% discount • Career protection</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Personal Information -->
+            <div class="form-step hidden" id="step-3">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Personal Information</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="form-label">Full Name (as per passport) *</label>
+                        <input type="text" name="full_name" class="form-input" placeholder="John Doe" required>
+                        <p class="form-hint">Must match your identification document exactly</p>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Preferred Name (optional)</label>
+                        <input type="text" name="preferred_name" class="form-input" placeholder="How you'd like us to address you">
+                        <p class="form-hint">Example: If your full name is Sathiyavani, you might prefer Sathi</p>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Date of Birth *</label>
+                        <input type="date" name="date_of_birth" class="form-input" required onchange="calculateAge()">
+                        <p class="form-hint">You must be 18 years or older | Age: <span id="calculated_age">-</span> years</p>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Nationality *</label>
+                        <select name="nationality" class="form-select" required>
+                            <option value="">Select Your Nationality</option>
+                            <option value="Malaysia">Malaysia</option>
+                            <option value="China">China</option>
+                            <option value="India">India</option>
+                            <option value="Bangladesh">Bangladesh</option>
+                            <option value="Philippines">Philippines</option>
+                            <option value="Thailand">Thailand</option>
+                            <option value="Vietnam">Vietnam</option>
+                            <option value="Indonesia">Indonesia</option>
+                            <option value="Pakistan">Pakistan</option>
+                            <option value="Myanmar">Myanmar</option>
+                            <option value="Singapore">Singapore</option>
+                            <option value="Brunei">Brunei</option>
+                            <option value="United Kingdom">United Kingdom</option>
+                            <option value="United States">United States</option>
+                            <option value="Canada">Canada</option>
+                            <option value="Australia">Australia</option>
+                            <option value="South Korea">South Korea</option>
+                            <option value="Japan">Japan</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Gender *</label>
+                            <select name="gender" class="form-select" required>
+                                <option value="">Select</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                                <option value="prefer_not_to_say">Prefer not to say</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="form-label">Marital Status</label>
+                            <select name="marital_status" class="form-select">
+                                <option value="">Select</option>
+                                <option value="single">Single</option>
+                                <option value="married">Married</option>
+                                <option value="divorced">Divorced</option>
+                                <option value="widowed">Widowed</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Identification Type *</label>
+                            <select name="id_type" class="form-select" required>
+                                <option value="passport">Passport</option>
+                                <option value="work_permit">Work Permit</option>
+                                <option value="student_pass">Student Pass</option>
+                                <option value="residence_permit">Residence Permit</option>
+                                <option value="employment_pass">Employment Pass</option>
+                                <option value="national_id">National ID</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="form-label">ID Number *</label>
+                            <input type="text" name="id_number" class="form-input" placeholder="123456789" required>
+                            <p class="form-hint">Will be encrypted & kept secure</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Contact & Address -->
+            <div class="form-step hidden" id="step-4">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Contact & Address</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="form-label">Email Address *</label>
+                        <input type="email" name="email" class="form-input" placeholder="your@email.com" required>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Phone Number *</label>
+                        <div class="flex gap-2">
+                            <select name="phone_country_code" class="form-select w-24" required>
+                                <option value="+60">+60 MY</option>
+                                <option value="+65">+65 SG</option>
+                                <option value="+66">+66 TH</option>
+                                <option value="+84">+84 VN</option>
+                                <option value="+86">+86 CN</option>
+                                <option value="+91">+91 IN</option>
+                                <option value="+44">+44 UK</option>
+                                <option value="+1">+1 US</option>
+                            </select>
+                            <input type="tel" name="phone_number" class="form-input flex-1" placeholder="123456789" required>
+                        </div>
+                        <p class="form-hint">Example: +60123456789</p>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Address Line 1 *</label>
+                        <input type="text" name="address_line_1" class="form-input" placeholder="Street address, building, or landmark" required>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Address Line 2 (optional)</label>
+                        <input type="text" name="address_line_2" class="form-input" placeholder="Apartment, suite, etc.">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">City *</label>
+                            <input type="text" name="city" class="form-input" placeholder="Kuala Lumpur" required>
+                        </div>
+                        
+                        <div>
+                            <label class="form-label">State/Province *</label>
+                            <select name="state_province" class="form-select" required>
+                                <option value="">Select State</option>
+                                <option value="Kuala Lumpur">Kuala Lumpur</option>
+                                <option value="Selangor">Selangor</option>
+                                <option value="Penang">Penang</option>
+                                <option value="Johor">Johor</option>
+                                <option value="Kedah">Kedah</option>
+                                <option value="Kelantan">Kelantan</option>
+                                <option value="Malacca">Malacca</option>
+                                <option value="Negeri Sembilan">Negeri Sembilan</option>
+                                <option value="Pahang">Pahang</option>
+                                <option value="Perak">Perak</option>
+                                <option value="Perlis">Perlis</option>
+                                <option value="Sabah">Sabah</option>
+                                <option value="Sarawak">Sarawak</option>
+                                <option value="Terengganu">Terengganu</option>
+                                <option value="Putrajaya">Putrajaya</option>
+                                <option value="Labuan">Labuan</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Postcode *</label>
+                            <input type="text" name="postcode" class="form-input" placeholder="50000" required>
+                            <p class="form-hint">Malaysia: 5 digits (e.g., 50000)</p>
+                        </div>
+                        
+                        <div>
+                            <label class="form-label">Country *</label>
+                            <select name="country" class="form-select" required>
+                                <option value="Malaysia" selected>Malaysia</option>
+                                <option value="Singapore">Singapore</option>
+                                <option value="Thailand">Thailand</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Category-Specific Details -->
+            <div class="form-step hidden" id="step-5">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Your Details</h2>
+                
+                <!-- Worker Section -->
+                <div id="worker-details-section" class="space-y-4 hidden">
+                    <div>
+                        <label class="form-label">Occupation *</label>
+                        <input type="text" name="occupation" class="form-input" placeholder="e.g., Software Engineer" required>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Industry *</label>
+                        <select name="industry" class="form-select" required>
+                            <option value="">Select Industry</option>
+                            <option value="technology">Technology / IT</option>
+                            <option value="finance">Finance / Banking</option>
+                            <option value="healthcare">Healthcare / Medical</option>
+                            <option value="construction">Construction</option>
+                            <option value="manufacturing">Manufacturing</option>
+                            <option value="hospitality">Hospitality / Tourism</option>
+                            <option value="retail">Retail / Commerce</option>
+                            <option value="education">Education</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Employer Name *</label>
+                        <input type="text" name="employer_name" class="form-input" placeholder="Company name" required>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Monthly Salary (Gross, MYR) *</label>
+                        <div class="flex items-center">
+                            <span class="mr-2 font-semibold text-gray-700">RM</span>
+                            <input type="number" name="monthly_salary" class="form-input" placeholder="0" min="0" step="100" required onchange="calculatePremium()">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Employment Type *</label>
+                        <select name="employment_type" class="form-select" required onchange="calculatePremium()">
+                            <option value="">Select Type</option>
+                            <option value="permanent">Permanent</option>
+                            <option value="contract">Contract</option>
+                            <option value="freelance">Freelance</option>
+                            <option value="temporary">Temporary</option>
+                        </select>
+                    </div>
+                    
+                    <div id="category1-section" class="hidden space-y-4 pt-4 border-t">
+                        <p class="text-sm font-semibold text-gray-700 bg-blue-50 p-3 rounded">High-Skilled Professional Details</p>
+                        
+                        <div>
+                            <label class="form-label">Years of Experience *</label>
+                            <input type="number" name="years_of_experience" class="form-input" placeholder="5" min="0" max="50">
+                        </div>
+                        
+                        <div>
+                            <label class="form-label">Professional License Number (optional)</label>
+                            <input type="text" name="professional_license_number" class="form-input" placeholder="e.g., ENG123456" onchange="calculatePremium()">
+                            <p class="form-hint">If you have a professional license, enter it for a 5% discount</p>
+                        </div>
+                    </div>
+                    
+                    <div id="category3-warning" class="hidden p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p class="text-sm font-semibold text-yellow-800">⚠️ Important Notice</p>
+                        <p class="text-sm text-yellow-700 mt-1">General workers in Malaysia are subject to labor quotas. Your work permit renewal depends on government quotas. We recommend annual policy reviews.</p>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Work Permit Status *</label>
+                        <select name="work_permit_status" class="form-select" required>
+                            <option value="">Select Status</option>
+                            <option value="valid">Valid (currently active)</option>
+                            <option value="pending">Pending (under review)</option>
+                            <option value="eligible">Eligible (not applied yet)</option>
+                            <option value="expired">Expired (renewal in progress)</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Work Permit Expiry Date</label>
+                        <input type="date" name="work_permit_expiry_date" class="form-input">
+                    </div>
+                </div>
+
+                <!-- Student Section -->
+                <div id="student-details-section" class="space-y-4 hidden">
+                    <div>
+                        <label class="form-label">University Name *</label>
+                        <input type="text" name="university_name" class="form-input" placeholder="e.g., Universiti Malaya" required>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Level of Study *</label>
+                        <select name="study_level" class="form-select" required onchange="calculatePremium()">
+                            <option value="">Select Level</option>
+                            <option value="diploma">Diploma (2-3 years)</option>
+                            <option value="bachelor">Bachelor Degree (3-4 years)</option>
+                            <option value="master">Master's Degree (1-3 years)</option>
+                            <option value="phd">PhD / Doctoral (3-7 years)</option>
+                            <option value="certificate">Certificate / Short Course</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Field of Study *</label>
+                        <select name="field_of_study" class="form-select" required>
+                            <option value="">Select Field</option>
+                            <option value="engineering">Engineering</option>
+                            <option value="business">Business / Commerce</option>
+                            <option value="science">Science</option>
+                            <option value="medicine">Medicine / Healthcare</option>
+                            <option value="arts">Arts / Humanities</option>
+                            <option value="law">Law</option>
+                            <option value="computer_science">Computer Science / IT</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Course Name *</label>
+                        <input type="text" name="course_of_study" class="form-input" placeholder="e.g., Bachelor of Computer Science" required>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Expected Graduation Date *</label>
+                        <input type="date" name="expected_graduation" class="form-input" required onchange="calculateStudyDuration()">
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Intended Duration of Stay in Malaysia</label>
+                        <input type="number" name="intended_duration_months" class="form-input" placeholder="36" min="1" max="84" readonly>
+                        <p class="form-hint">Auto-calculated from today to graduation date (in months)</p>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Living Arrangement *</label>
+                        <select name="on_campus_residential" class="form-select" required onchange="calculatePremium()">
+                            <option value="">Select Arrangement</option>
+                            <option value="true">On-campus (dormitory)</option>
+                            <option value="false">Off-campus (apartment/house)</option>
+                            <option value="family">With family/relatives</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 6: Coverage & Premium -->
+            <div class="form-step hidden" id="step-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Select Your Coverage</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="form-label">Coverage Plan *</label>
+                        <div class="grid grid-cols-3 gap-4">
+                            <label class="border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-400 transition-colors" onclick="selectPlan('plan_5')">
+                                <input type="radio" name="plan" value="plan_5" class="w-5 h-5 text-blue-600" onchange="calculatePremium()">
+                                <p class="font-semibold text-gray-800 mt-2">Plan 5</p>
+                                <p class="text-2xl font-bold text-blue-600">RM360k</p>
+                                <p class="text-xs text-gray-600 mt-1">from RM30/month</p>
+                            </label>
+                            
+                            <label class="border-2 border-blue-600 rounded-lg p-4 cursor-pointer bg-blue-50" onclick="selectPlan('plan_6')">
+                                <span class="inline-block px-2 py-1 bg-green-500 text-white text-xs font-bold rounded">Popular</span>
+                                <input type="radio" name="plan" value="plan_6" class="w-5 h-5 text-blue-600 mt-1" onchange="calculatePremium()">
+                                <p class="font-semibold text-gray-800 mt-2">Plan 6</p>
+                                <p class="text-2xl font-bold text-blue-600">RM600k</p>
+                                <p class="text-xs text-gray-600 mt-1">from RM40/month</p>
+                            </label>
+                            
+                            <label class="border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-400 transition-colors" onclick="selectPlan('plan_7')">
+                                <input type="radio" name="plan" value="plan_7" class="w-5 h-5 text-blue-600" onchange="calculatePremium()">
+                                <p class="font-semibold text-gray-800 mt-2">Plan 7</p>
+                                <p class="text-2xl font-bold text-blue-600">RM900k</p>
+                                <p class="text-xs text-gray-600 mt-1">from RM60/month</p>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Premium Display -->
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-6">
+                        <h3 class="font-semibold text-gray-800 mb-4">Premium Breakdown</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-700">Base Premium:</span>
+                                <span class="font-semibold text-gray-800">RM<span id="base_premium">480</span>/year</span>
+                            </div>
+                            <div class="flex justify-between" id="category-adjustment">
+                                <span class="text-gray-700">Your Category:</span>
+                                <span class="font-semibold text-gray-800" id="category_adj_text">No change</span>
+                            </div>
+                            <div class="flex justify-between" id="industry-adjustment">
+                                <span class="text-gray-700">Industry:</span>
+                                <span class="font-semibold text-gray-800" id="industry_adj_text">No change</span>
+                            </div>
+                            <div class="border-t border-gray-300 pt-2 mt-2 flex justify-between">
+                                <span class="text-gray-700">Annual Premium:</span>
+                                <span class="text-lg font-bold text-blue-600">RM<span id="annual_premium">480</span>/year</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-700">Monthly Payment:</span>
+                                <span class="text-lg font-bold text-blue-600">RM<span id="monthly_premium">40</span>/month</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 7: Add-ons -->
+            <div class="form-step hidden" id="step-7">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Optional Add-Ons</h2>
+                <p class="text-gray-600 mb-6">Enhance your coverage with these optional add-ons</p>
+                
+                <div id="worker-addons" class="space-y-4 hidden">
+                    <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors" onclick="toggleAddon('employment_protection')">
+                        <input type="checkbox" name="addons" value="employment_protection" class="w-5 h-5 text-blue-600 mt-1" onchange="calculatePremium()">
+                        <div class="ml-4">
+                            <p class="font-semibold text-gray-800">Employment Protection</p>
+                            <p class="text-sm text-gray-600">Coverage if you lose your job unexpectedly</p>
+                            <p class="text-sm font-semibold text-blue-600 mt-2">+RM50/year</p>
+                        </div>
+                    </label>
+                    
+                    <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors" onclick="toggleAddon('occupational_injury')">
+                        <input type="checkbox" name="addons" value="occupational_injury" class="w-5 h-5 text-blue-600 mt-1" onchange="calculatePremium()">
+                        <div class="ml-4">
+                            <p class="font-semibold text-gray-800">Occupational Injury Protection</p>
+                            <p class="text-sm text-gray-600">Enhanced coverage for work-related accidents</p>
+                            <p class="text-sm font-semibold text-blue-600 mt-2">+RM35/year</p>
+                        </div>
+                    </label>
+                    
+                    <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors" id="addon-professional-liability" class="hidden">
+                        <input type="checkbox" name="addons" value="professional_liability" class="w-5 h-5 text-blue-600 mt-1" onchange="calculatePremium()">
+                        <div class="ml-4">
+                            <p class="font-semibold text-gray-800">Professional Liability Coverage</p>
+                            <p class="text-sm text-gray-600">Protection if your professional advice causes harm</p>
+                            <p class="text-sm font-semibold text-blue-600 mt-2">+RM40/year</p>
+                        </div>
+                    </label>
+                    
+                    <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors">
+                        <input type="checkbox" name="addons" value="family_coverage" class="w-5 h-5 text-blue-600 mt-1" onchange="calculatePremium()">
+                        <div class="ml-4">
+                            <p class="font-semibold text-gray-800">Family Coverage Add-On</p>
+                            <p class="text-sm text-gray-600">Extend coverage to spouse and 2 children</p>
+                            <p class="text-sm font-semibold text-blue-600 mt-2">+RM80/year</p>
+                        </div>
+                    </label>
+                </div>
+                
+                <div id="student-addons" class="space-y-4 hidden">
+                    <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors">
+                        <input type="checkbox" name="addons" value="study_interruption" class="w-5 h-5 text-blue-600 mt-1" onchange="calculatePremium()">
+                        <div class="ml-4">
+                            <p class="font-semibold text-gray-800">Study Interruption Protection</p>
+                            <p class="text-sm text-gray-600">Covers costs if you must stop studying due to illness</p>
+                            <p class="text-sm font-semibold text-blue-600 mt-2">+RM50/year</p>
+                        </div>
+                    </label>
+                    
+                    <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors">
+                        <input type="checkbox" name="addons" value="education_protection" class="w-5 h-5 text-blue-600 mt-1" onchange="calculatePremium()">
+                        <div class="ml-4">
+                            <p class="font-semibold text-gray-800">Education Protection (Master's/PhD)</p>
+                            <p class="text-sm text-gray-600">Covers tuition fees if you're hospitalized</p>
+                            <p class="text-sm font-semibold text-blue-600 mt-2">+RM40/year</p>
+                        </div>
+                    </label>
+                    
+                    <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors">
+                        <input type="checkbox" name="addons" value="family_emergency" class="w-5 h-5 text-blue-600 mt-1" onchange="calculatePremium()">
+                        <div class="ml-4">
+                            <p class="font-semibold text-gray-800">Family Emergency Coverage</p>
+                            <p class="text-sm text-gray-600">Helps if family emergency forces you to travel home</p>
+                            <p class="text-sm font-semibold text-blue-600 mt-2">+RM35/year</p>
+                        </div>
+                    </label>
+                    
+                    <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors" id="addon-scholarship-protection" class="hidden">
+                        <input type="checkbox" name="addons" value="scholarship_protection" class="w-5 h-5 text-blue-600 mt-1" onchange="calculatePremium()">
+                        <div class="ml-4">
+                            <p class="font-semibold text-gray-800">Scholarship Protection</p>
+                            <p class="text-sm text-gray-600">Covers if you lose your scholarship due to accident</p>
+                            <p class="text-sm font-semibold text-blue-600 mt-2">+RM60/year</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Step 8: Declaration & Consent -->
+            <div class="form-step hidden" id="step-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Declaration & Consent</h2>
+                
+                <div class="space-y-4">
+                    <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg">
+                        <input type="checkbox" name="accuracy_confirmation" class="w-5 h-5 text-blue-600 mt-1" required>
+                        <div class="ml-4">
+                            <p class="font-semibold text-gray-800">I confirm the information is complete and accurate *</p>
+                            <p class="text-sm text-gray-600">I understand that providing false information may result in claim rejection</p>
+                        </div>
+                    </label>
+                    
+                    <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg">
+                        <input type="checkbox" name="pdpa_consent" class="w-5 h-5 text-blue-600 mt-1" required>
+                        <div class="ml-4">
+                            <p class="font-semibold text-gray-800">I consent to Allianz processing my personal data *</p>
+                            <p class="text-sm text-gray-600 mb-2">In accordance with Malaysia's Personal Data Protection Act (PDPA)</p>
+                            <ul class="text-sm text-gray-600 space-y-1 list-disc list-inside">
+                                <li>Your data will be used only for insurance purposes</li>
+                                <li>Protected with encryption (AES-256)</li>
+                                <li>Retained for 7 years, then deleted</li>
+                                <li>Not shared with third parties without consent</li>
+                            </ul>
+                        </div>
+                    </label>
+                    
+                    <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg">
+                        <input type="checkbox" name="terms_accepted" class="w-5 h-5 text-blue-600 mt-1" required>
+                        <div class="ml-4">
+                            <p class="font-semibold text-gray-800">I accept the Terms and Conditions *</p>
+                            <p class="text-sm text-gray-600"><a href="#" class="text-blue-600 hover:underline">Read full Terms & Conditions</a></p>
+                        </div>
+                    </label>
+                    
+                    <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg">
+                        <input type="checkbox" name="marketing_opt_in" class="w-5 h-5 text-blue-600 mt-1">
+                        <div class="ml-4">
+                            <p class="font-semibold text-gray-800">I'd like to receive product updates and special offers</p>
+                            <p class="text-sm text-gray-600">We'll send you occasional emails about new products and promotions</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Step 9: Review & Submit -->
+            <div class="form-step hidden" id="step-9">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Review Your Application</h2>
+                
+                <div id="review-content" class="space-y-6">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                
+                <div class="mt-8 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p class="text-sm text-green-800">✓ All information complete and verified</p>
+                    <p class="text-sm text-green-800 mt-1">Ready to submit your application</p>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="flex gap-4 mt-8 pt-6 border-t">
+                <button type="button" class="btn-secondary" onclick="previousStep()" id="prev-btn" style="display: none;">
+                    ← Back
+                </button>
+                <button type="button" class="btn-primary ml-auto" onclick="nextStep()" id="next-btn">
+                    Next →
+                </button>
+                <button type="submit" class="btn-primary ml-auto hidden" id="submit-btn" onclick="submitForm(event)">
+                    Submit Application
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Styles for step indicators -->
+<style>
+    .step-indicator {
+        @apply flex flex-col items-center gap-1 p-2 rounded-lg cursor-pointer transition-all;
+    }
+    
+    .step-indicator:hover {
+        @apply bg-gray-200;
+    }
+    
+    .step-indicator.active .step-number {
+        @apply bg-blue-600 text-white;
+    }
+    
+    .step-indicator.completed .step-number {
+        @apply bg-green-600 text-white;
+    }
+    
+    .step-number {
+        @apply w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm bg-gray-300 text-gray-700;
+    }
+    
+    .step-label {
+        @apply text-xs font-semibold text-gray-700 text-center;
+    }
+    
+    .form-step {
+        @apply mb-6;
+    }
+</style>
+
+<!-- Main Form Engine Script -->
+<script src="{% static 'js/form-engine.js' %}"></script>
+<script src="{% static 'js/field-visibility.js' %}"></script>
+<script src="{% static 'js/premium-calculator.js' %}"></script>
+<script src="{% static 'js/validation.js' %}"></script>
+<script src="{% static 'js/state-manager.js' %}"></script>
+
+<script>
+    // Initialize form on load
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeForm();
+        loadFormState();
+    });
+</script>
+{% endblock %}

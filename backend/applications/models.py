@@ -94,6 +94,63 @@ class Application(models.Model):
         ('both', 'Both Email & SMS'),
     ]
     
+    # ============ APPLICANT TYPE (Worker vs Student) ============
+    APPLICANT_TYPE_CHOICES = [
+        ('worker', 'Foreign Worker'),
+        ('student', 'Foreign Student'),
+        ('other', 'Other'),
+    ]
+    
+    # ============ WORKER CATEGORIES (Malaysia Labor Regulation June 2026) ============
+    # Effective June 2026: New Malaysia labor framework classifies foreign workers into 3 categories
+    WORKER_CATEGORY_CHOICES = [
+        ('category_1', 'Category 1: High-Skilled Professional (Specialist/Expert)'),
+        ('category_2', 'Category 2: Skilled Worker (Technician/Supervisor)'),
+        ('category_3', 'Category 3: General Worker (Administrative/Support)'),
+    ]
+    
+    EMPLOYMENT_TYPE_CHOICES = [
+        ('permanent', 'Permanent Employment'),
+        ('contract', 'Contract-Based'),
+        ('freelance', 'Freelance/Self-Employed'),
+        ('temporary', 'Temporary Assignment'),
+    ]
+    
+    WORK_PERMIT_STATUS_CHOICES = [
+        ('valid', 'Valid Work Permit'),
+        ('pending', 'Pending Application'),
+        ('eligible', 'Eligible but Not Applied'),
+        ('expired', 'Expired (Renewal Pending)'),
+        ('other', 'Other Status'),
+    ]
+    
+    # ============ STUDENT SPONSOR TYPE ============
+    STUDY_SPONSOR_TYPE_CHOICES = [
+        ('self_sponsored', 'Self-Sponsored'),
+        ('scholarship', 'Scholarship-Funded'),
+        ('employer_sponsored', 'Employer-Sponsored Study'),
+        ('government_grant', 'Government Grant'),
+        ('other', 'Other Funding'),
+    ]
+    
+    STUDY_LEVEL_CHOICES = [
+        ('diploma', 'Diploma'),
+        ('bachelor', 'Bachelor Degree'),
+        ('master', 'Master Degree'),
+        ('phd', 'PhD / Doctoral'),
+        ('certificate', 'Professional Certificate'),
+        ('other', 'Other'),
+    ]
+    
+    FINANCIAL_PROOF_TYPE_CHOICES = [
+        ('bank_statement', 'Bank Statement'),
+        ('scholarship_letter', 'Scholarship Award Letter'),
+        ('sponsor_letter', 'Sponsor Letter from Employer'),
+        ('parents_declaration', 'Parents Financial Declaration'),
+        ('investment_proof', 'Investment/Asset Proof'),
+        ('other', 'Other Documentation'),
+    ]
+    
     # Primary key
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     
@@ -144,6 +201,74 @@ class Application(models.Model):
     employer_name = models.CharField(max_length=255, blank=True, help_text="Company, institution, or self-employed")
     work_environment = models.CharField(max_length=30, choices=WORK_ENVIRONMENT_CHOICES, blank=True)
     
+    # ============ WORKER-SPECIFIC FIELDS (Foreign Workers) ============
+    applicant_type = models.CharField(
+        max_length=20, 
+        choices=APPLICANT_TYPE_CHOICES, 
+        default='other',
+        help_text="Distinguish between worker, student, and other applicants"
+    )
+    
+    # Worker categorization under Malaysia labor regulation (effective June 2026)
+    worker_category = models.CharField(
+        max_length=20,
+        choices=WORKER_CATEGORY_CHOICES,
+        blank=True,
+        help_text="Malaysia labor regulation: 3 categories of foreign workers"
+    )
+    
+    # Worker employment details
+    monthly_salary = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Monthly gross salary in MYR"
+    )
+    
+    employment_type = models.CharField(
+        max_length=20,
+        choices=EMPLOYMENT_TYPE_CHOICES,
+        blank=True,
+        help_text="Permanent, contract, freelance, or temporary"
+    )
+    
+    work_permit_status = models.CharField(
+        max_length=20,
+        choices=WORK_PERMIT_STATUS_CHOICES,
+        blank=True,
+        help_text="Current work permit status in Malaysia"
+    )
+    
+    work_permit_expiry_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Work permit expiration date"
+    )
+    
+    employer_registration_number = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Company registration number or employer ID"
+    )
+    
+    employer_sponsorship_approved = models.BooleanField(
+        default=False,
+        help_text="Whether employer has approved/sponsored the work visa"
+    )
+    
+    years_of_experience = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Years of work experience in current field"
+    )
+    
+    professional_license_number = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Professional license/certification number (if applicable)"
+    )
+    
     # ============ STUDENT STATUS (Conditional) ============
     is_student = models.BooleanField(default=False, help_text="Whether applicant is currently a student")
     university_name = models.CharField(max_length=255, blank=True)
@@ -151,6 +276,70 @@ class Application(models.Model):
     field_of_study = models.CharField(max_length=100, blank=True)
     university_country = models.CharField(max_length=100, blank=True, help_text="Country where studying")
     expected_graduation = models.DateField(null=True, blank=True)
+    
+    # ============ STUDENT-SPECIFIC FIELDS (Foreign Students) ============
+    study_sponsor_type = models.CharField(
+        max_length=25,
+        choices=STUDY_SPONSOR_TYPE_CHOICES,
+        blank=True,
+        help_text="How is the student's education being funded?"
+    )
+    
+    study_level = models.CharField(
+        max_length=20,
+        choices=STUDY_LEVEL_CHOICES,
+        blank=True,
+        help_text="Level of study: Diploma, Bachelor, Master, PhD, etc."
+    )
+    
+    scholarship_name = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Name of scholarship or funding program"
+    )
+    
+    scholarship_award_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Annual scholarship/funding amount in MYR"
+    )
+    
+    financial_proof_type = models.CharField(
+        max_length=25,
+        choices=FINANCIAL_PROOF_TYPE_CHOICES,
+        blank=True,
+        help_text="Type of financial proof provided"
+    )
+    
+    financial_proof_submitted = models.BooleanField(
+        default=False,
+        help_text="Whether financial proof documents have been submitted"
+    )
+    
+    intended_duration_months = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Intended duration of stay in Malaysia (in months)"
+    )
+    
+    semester_start_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date when current semester/course starts"
+    )
+    
+    on_campus_residential = models.BooleanField(
+        default=False,
+        help_text="Whether student will reside on campus"
+    )
+    
+    employer_sponsoring_study = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Employer name if study is employer-sponsored"
+    )
     
     # ============ INSURANCE DETAILS ============
     plan = models.CharField(max_length=20, choices=PLAN_CHOICES)

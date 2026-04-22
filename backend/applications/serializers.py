@@ -52,6 +52,9 @@ class ApplicationSerializer(serializers.ModelSerializer):
             'id',
             'application_number',
             
+            # Applicant type & categorization
+            'applicant_type',
+            
             # Plan selection
             'plan',
             'coverage_addons',
@@ -98,6 +101,17 @@ class ApplicationSerializer(serializers.ModelSerializer):
             'employer_name',
             'work_environment',
             
+            # Worker-specific fields
+            'worker_category',
+            'monthly_salary',
+            'employment_type',
+            'work_permit_status',
+            'work_permit_expiry_date',
+            'employer_registration_number',
+            'employer_sponsorship_approved',
+            'years_of_experience',
+            'professional_license_number',
+            
             # Student status (conditional)
             'is_student',
             'university_name',
@@ -105,6 +119,18 @@ class ApplicationSerializer(serializers.ModelSerializer):
             'field_of_study',
             'university_country',
             'expected_graduation',
+            
+            # Student-specific fields
+            'study_sponsor_type',
+            'study_level',
+            'scholarship_name',
+            'scholarship_award_amount',
+            'financial_proof_type',
+            'financial_proof_submitted',
+            'intended_duration_months',
+            'semester_start_date',
+            'on_campus_residential',
+            'employer_sponsoring_study',
             
             # Beneficiary
             'beneficiary_name',
@@ -179,6 +205,73 @@ class ApplicationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("You must consent to data processing to proceed.")
         return value
     
+    def validate_applicant_type(self, value):
+        """Validate applicant type is properly selected."""
+        if not value:
+            raise serializers.ValidationError("Applicant type (worker/student) must be specified.")
+        return value
+    
+    def validate_worker_category(self, value):
+        """Validate worker category when applicant is a worker."""
+        if self.initial_data.get('applicant_type') == 'worker' and not value:
+            raise serializers.ValidationError("Worker category must be specified for foreign workers.")
+        return value
+    
+    def validate_monthly_salary(self, value):
+        """Validate monthly salary is positive when provided."""
+        if value is not None and value <= 0:
+            raise serializers.ValidationError("Monthly salary must be a positive amount.")
+        return value
+    
+    def validate_employment_type(self, value):
+        """Validate employment type when applicant is a worker."""
+        if self.initial_data.get('applicant_type') == 'worker' and not value:
+            raise serializers.ValidationError("Employment type must be specified for workers.")
+        return value
+    
+    def validate_work_permit_status(self, value):
+        """Validate work permit status for workers."""
+        if self.initial_data.get('applicant_type') == 'worker' and not value:
+            raise serializers.ValidationError("Work permit status must be specified.")
+        return value
+    
+    def validate_work_permit_expiry_date(self, value):
+        """Validate work permit expiry date."""
+        if value is not None and value < timezone.now().date():
+            raise serializers.ValidationError("Work permit expiry date cannot be in the past.")
+        return value
+    
+    def validate_study_level(self, value):
+        """Validate study level when applicant is a student."""
+        if self.initial_data.get('is_student') and not value:
+            raise serializers.ValidationError("Level of study must be specified for students.")
+        return value
+    
+    def validate_study_sponsor_type(self, value):
+        """Validate study sponsor type when applicant is a student."""
+        if self.initial_data.get('is_student') and not value:
+            raise serializers.ValidationError("Study sponsorship type must be specified for students.")
+        return value
+    
+    def validate_scholarship_award_amount(self, value):
+        """Validate scholarship amount is positive when provided."""
+        if value is not None and value <= 0:
+            raise serializers.ValidationError("Scholarship amount must be a positive value.")
+        return value
+    
+    def validate_intended_duration_months(self, value):
+        """Validate intended duration of study is reasonable."""
+        if value is not None:
+            if value < 1 or value > 84:  # Max 7 years
+                raise serializers.ValidationError("Intended duration must be between 1 and 84 months.")
+        return value
+    
+    def validate_years_of_experience(self, value):
+        """Validate years of experience is non-negative."""
+        if value is not None and value < 0:
+            raise serializers.ValidationError("Years of experience cannot be negative.")
+        return value
+    
     def create(self, validated_data):
         """Override create to set data retention expiry (7 years from now)."""
         instance = Application.objects.create(**validated_data)
@@ -205,6 +298,9 @@ class ApplicationListSerializer(serializers.ModelSerializer):
             'full_name',
             'email',
             'plan',
+            'applicant_type',
+            'worker_category',
+            'study_level',
             'status',
             'calculated_premium',
             'created_at',
