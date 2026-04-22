@@ -8,9 +8,17 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#1e40af',
-        secondary: '#7c3aed',
-        accent: '#f59e0b',
+        primary: {
+          DEFAULT: '#003781',
+          light: '#008ed6',
+          dark: '#075994',
+        },
+        secondary: '#006192',
+        accent: '#f86200',
+        success: '#1e8927',
+        danger: '#dc3149',
+        warning: '#efbe25',
+        info: '#496ebd',
       },
       fontFamily: {
         sans: ['Inter', 'Segoe UI', 'Roboto', 'sans-serif'],

@@ -4,12 +4,47 @@
 
 @layer base {
   :root {
-    --primary: #0051BA;
-    --primary-dark: #003DA5;
-    --accent: #F59E0B;
-    --success: #10B981;
-    --error: #EF4444;
-    --warning: #F97316;
+    --text-color: #414141;
+    --page-background-color: #fff;
+    --primary-white: #fff;
+    --primary-brand: #003781;
+    --primary-action-bright: #007ab3;
+    --primary-action-medium: #008ed6;
+    --primary-action-dark: #006192;
+    --primary-action-darker: #075994;
+    --secondary-action-bright: #007ab3;
+    --secondary-action-dark: #006192;
+    --negative-action-dark: #006192;
+    --cta-action-bright: #3da556;
+    --attention-action: #bd417f;
+    --cta-action-dark: #05813c;
+    --button-cta-dark-active-background-color: #00450f;
+    --button-cta-dark-hover-background-color: #006028;
+    --button-attention-active-background-color: #720849;
+    --button-attention-hover-background-color: #962165;
+    --direct-action-bright: #f86200;
+    --link-action-dark: #006192;
+    --primary-action-text-bright: #fff;
+    --grey-tone-1: #414141;
+    --grey-tone-2: #5b5b5b;
+    --grey-tone-3: #767676;
+    --grey-tone-4: #999;
+    --grey-tone-5: #c2c2c2;
+    --grey-tone-6: #d9d9d9;
+    --grey-tone-7: #ececec;
+    --grey-tone-8: #f5f5f5;
+    --process-error: #dc3149;
+    --process-success: #1e8927;
+    --process-warning: #efbe25;
+    --process-info: #496ebd;
+    
+    /* Legacy variable mappings for backward compatibility */
+    --primary: var(--primary-brand);
+    --primary-dark: var(--primary-action-darker);
+    --accent: var(--direct-action-bright);
+    --success: var(--process-success);
+    --error: var(--process-error);
+    --warning: var(--process-warning);
   }
 
   html {
