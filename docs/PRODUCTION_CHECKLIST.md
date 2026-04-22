@@ -266,8 +266,8 @@ curl https://brightbeam-allianz.railway.app/api/admin/analytics/
 | /api/applications/{id}/ | GET | Token | ✅ |
 | /api/admin/applications/ | GET | Admin | ✅ |
 | /api/admin/applications/{id}/ | GET | Admin | ✅ |
-| /api/admin/applications/{id}/approve/ | PATCH | Admin | ✅ |
-| /api/admin/applications/{id}/reject/ | PATCH | Admin | ✅ |
+| /api/admin/applications/{id}/approve/ | POST | None (`AllowAny`) | ✅ |
+| /api/admin/applications/{id}/reject/ | POST | None (`AllowAny`) | ✅ |
 | /api/admin/analytics/ | GET | Admin | ✅ |
 | /api/admin/analytics/dropoff/ | GET | Admin | ✅ |
 

@@ -424,7 +424,8 @@ python manage.py createsuperuser  # For local testing
 | GET | `/api/data/occupations/` | Dropdown data | None |
 | GET | `/api/data/countries/` | Dropdown data | None |
 | GET | `/api/admin/applications/` | List all (paginated) | Admin |
-| PATCH | `/api/admin/applications/{id}/` | Approve/reject | Admin |
+| POST | `/api/admin/applications/{id}/approve/` | Approve application | None (`AllowAny`) |
+| POST | `/api/admin/applications/{id}/reject/` | Reject application | None (`AllowAny`) |
 | GET | `/api/admin/analytics/` | Dashboard KPIs | Admin |
 | GET | `/api/admin/analytics/dropoff/` | Drop-off analysis | Admin |
 
@@ -585,7 +586,7 @@ Full Application Data:
 ├── Audit trail: Timeline of actions
 ├── Internal notes: Add/edit comments
 ├── Documents: Upload ID photos (optional, phase 2)
-└── Action buttons: Approve, Request Info, Reject
+└── Action buttons: Approve, Reject
 
 Modal/Drawer (Tailwind):
 ├── Confirm approve/reject

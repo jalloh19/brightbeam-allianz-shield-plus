@@ -255,7 +255,7 @@
       })
       .catch(error => {
         console.error('Error loading applications:', error);
-        alert('Error loading applications. Please try again.');
+        window.showAppNotice('Unable to load applications. Please refresh and try again.', 'error');
       });
   }
 
@@ -343,22 +343,29 @@
       : { reason: notes || 'No reason provided' };
 
     fetch(`/api/admin/applications/${appId}/${endpoint}/`, {
-      method: 'PATCH',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-CSRFToken': getCookie('csrftoken')
       },
       body: JSON.stringify(body)
     })
-    .then(response => response.json())
-    .then(data => {
-      alert(`Application ${action}ed successfully!`);
+    .then(async response => {
+      if (!response.ok) {
+        const message = await window.parseApiError(response, 'Unable to update this application.');
+        throw new Error(message);
+      }
+      return response.json();
+    })
+    .then(() => {
+      const successVerb = action === 'approve' ? 'approved' : 'rejected';
+      window.showAppNotice(`Application ${successVerb} successfully.`, 'success');
       closeModal();
       loadApplications();
     })
     .catch(error => {
       console.error('Error:', error);
-      alert('Error performing action. Please try again.');
+      window.showAppNotice(error.message || 'Unable to complete this action right now. Please try again.', 'error');
     });
   }
 

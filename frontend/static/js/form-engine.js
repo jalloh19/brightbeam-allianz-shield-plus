@@ -514,7 +514,7 @@ function submitForm(event) {
                     <div class="bg-gray-50 p-6 rounded-lg text-left mb-8 max-w-md mx-auto">
                         <h3 class="font-semibold text-gray-800 mb-4">What happens next:</h3>
                         <ol class="space-y-3 text-sm text-gray-700">
-                            <li>✓ Confirmation email sent to ${state.email}</li>
+                            <li>✓ Confirmation email sent to ${data.email || data.contact_email || 'your registered email address'}</li>
                             <li>✓ Document verification (3-5 business days)</li>
                             <li>✓ Premium confirmation</li>
                             <li>✓ Policy activation</li>
@@ -532,8 +532,8 @@ function submitForm(event) {
         console.error('Error:', error);
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
-        const errorMsg = error.detail || error.message || 'Error submitting application. Please try again.';
-        showAppNotice(errorMsg, 'error');
+        const errorMsg = error.detail || error.message || 'We could not submit your application. Please review your details and try again.';
+        window.showAppNotice(errorMsg, 'error');
     });
 }
 
@@ -621,60 +621,6 @@ async function handlePhotoUpload(fileInput) {
         urlInput.value = '';
     }
 }
-
-// ============ APP NOTIFICATIONS (CENTERED) ============
-
-function showAppNotice(message, type = 'info') {
-    /**
-     * Show centered notification popup
-     * Types: 'error', 'success', 'warning', 'info'
-     */
-    // Remove existing notice if any
-    const existing = document.getElementById('app-notice');
-    if (existing) {
-        existing.remove();
-    }
-    
-    const notice = document.createElement('div');
-    notice.id = 'app-notice';
-    notice.className = `fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 p-6 rounded-lg shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 ${
-        type === 'error' ? 'bg-red-50 border border-red-300' :
-        type === 'success' ? 'bg-green-50 border border-green-300' :
-        type === 'warning' ? 'bg-yellow-50 border border-yellow-300' :
-        'bg-blue-50 border border-blue-300'
-    }`;
-    
-    const icon = type === 'error' ? '✗' :
-                 type === 'success' ? '✓' :
-                 type === 'warning' ? '⚠' :
-                 'ℹ';
-    
-    const textColor = type === 'error' ? 'text-red-800' :
-                      type === 'success' ? 'text-green-800' :
-                      type === 'warning' ? 'text-yellow-800' :
-                      'text-blue-800';
-    
-    notice.innerHTML = `
-        <div class="flex items-start gap-3">
-            <span class="text-2xl">${icon}</span>
-            <div class="flex-1">
-                <p class="font-semibold ${textColor}">${message}</p>
-            </div>
-            <button onclick="document.getElementById('app-notice')?.remove()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
-        </div>
-    `;
-    
-    document.body.appendChild(notice);
-    
-    // Auto-remove after 4 seconds
-    setTimeout(() => {
-        notice.style.opacity = '0';
-        notice.style.transform = 'translate(-50%, -50%) scale(0.9)';
-        setTimeout(() => notice.remove(), 300);
-    }, 4000);
-}
-
-window.showAppNotice = showAppNotice;
 
 // Helper function to get CSRF token
 function getCookie(name) {

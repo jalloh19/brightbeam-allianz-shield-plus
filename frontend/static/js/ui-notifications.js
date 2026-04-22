@@ -3,6 +3,12 @@
  * Replaces blocking browser popups for better UX.
  */
 (function () {
+  function normalizeMessage(message) {
+    if (!message) return "Something went wrong. Please try again.";
+    if (Array.isArray(message)) return message.join(" ");
+    return String(message);
+  }
+
   function ensureContainer() {
     let container = document.getElementById("app-toast-container");
     if (!container) {
@@ -35,7 +41,7 @@
 
     const text = document.createElement("p");
     text.className = "app-toast-message";
-    text.textContent = message;
+    text.textContent = normalizeMessage(message);
 
     const close = document.createElement("button");
     close.type = "button";
@@ -69,5 +75,48 @@
     }, 220);
   }
 
+  function showAppBanner(message, type = "info", targetId = "app-banner-host") {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    const text = normalizeMessage(message);
+    const classes = {
+      success: "bg-green-50 border-green-300 text-green-800",
+      warning: "bg-yellow-50 border-yellow-300 text-yellow-800",
+      error: "bg-red-50 border-red-300 text-red-800",
+      info: "bg-blue-50 border-blue-300 text-blue-800",
+    };
+    target.innerHTML = `
+      <div class="border rounded-lg p-3 ${classes[type] || classes.info}" role="status" aria-live="polite">
+        <div class="flex justify-between items-start gap-3">
+          <p class="text-sm font-medium">${text}</p>
+          <button type="button" class="text-lg leading-none opacity-70 hover:opacity-100" aria-label="Dismiss banner">×</button>
+        </div>
+      </div>
+    `;
+    const btn = target.querySelector("button");
+    if (btn) {
+      btn.addEventListener("click", function () {
+        target.innerHTML = "";
+      });
+    }
+  }
+
+  async function parseApiError(response, fallbackMessage) {
+    const fallback = fallbackMessage || "We couldn't complete your request. Please try again.";
+    if (!response) return fallback;
+    try {
+      const payload = await response.clone().json();
+      if (typeof payload === "string") return payload;
+      if (payload.detail) return normalizeMessage(payload.detail);
+      const firstKey = Object.keys(payload || {})[0];
+      if (!firstKey) return fallback;
+      return normalizeMessage(payload[firstKey]);
+    } catch (_err) {
+      return `${fallback} (HTTP ${response.status})`;
+    }
+  }
+
   window.showAppNotice = showAppNotice;
+  window.showAppBanner = showAppBanner;
+  window.parseApiError = parseApiError;
 })();

@@ -78,7 +78,7 @@ function showPDFSuccess(message) {
     button.classList.remove('loading');
     
     // Show toast notification
-    showNotification(message, 'success', 3000);
+    window.showAppNotice(message, 'success', 3000);
 }
 
 function showPDFError(message) {
@@ -93,61 +93,7 @@ function showPDFError(message) {
     button.classList.remove('loading');
     
     // Show toast notification
-    showNotification(message, 'error', 5000);
-}
-
-// ============ NOTIFICATION TOAST ============
-
-function showNotification(message, type = 'info', duration = 3000) {
-    /**
-     * Show temporary notification toast
-     * Types: success, error, warning, info
-     */
-    const container = document.getElementById('notification-container') || createNotificationContainer();
-    
-    const toast = document.createElement('div');
-    toast.className = `notification notification-${type}`;
-    toast.innerHTML = `
-        <div class="notification-content">
-            <span class="notification-icon">${getNotificationIcon(type)}</span>
-            <span class="notification-message">${message}</span>
-            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
-        </div>
-    `;
-    
-    container.appendChild(toast);
-    
-    // Auto-remove after duration
-    if (duration > 0) {
-        setTimeout(() => {
-            toast.classList.add('fade-out');
-            setTimeout(() => toast.remove(), 300);
-        }, duration);
-    }
-}
-
-function createNotificationContainer() {
-    /**
-     * Create notification container if it doesn't exist
-     */
-    const container = document.createElement('div');
-    container.id = 'notification-container';
-    container.className = 'notification-container fixed top-4 right-4 z-50 space-y-2';
-    document.body.appendChild(container);
-    return container;
-}
-
-function getNotificationIcon(type) {
-    /**
-     * Get icon for notification type
-     */
-    const icons = {
-        'success': '✓',
-        'error': '✗',
-        'warning': '⚠',
-        'info': 'ℹ'
-    };
-    return icons[type] || icons['info'];
+    window.showAppNotice(message, 'error', 5000);
 }
 
 // ============ UTILITIES ============
@@ -178,7 +124,6 @@ function getAuthToken() {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         downloadPDF,
-        showNotification,
         getAuthToken
     };
 }

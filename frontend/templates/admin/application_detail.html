@@ -317,11 +317,6 @@
               ✗ Reject Application
             </button>
 
-            <!-- Request Info Button -->
-            <button onclick="openApprovalModal('request_info')" id="btn_request" class="w-full px-4 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium hidden">
-              ? Request More Info
-            </button>
-
             <!-- Download PDF Button -->
             <button onclick="downloadPDF(getApplicationId())" id="download-pdf-btn" class="w-full px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark font-medium">
               📥 Download PDF
@@ -406,10 +401,6 @@
   let applicationData = {};
   let actionType = null;
 
-  function getApplicationId() {
-    return window.location.pathname.split('/')[3];
-  }
-
   function loadApplication() {
     const appId = getApplicationId();
     fetch(`/api/admin/applications/${appId}/`)
@@ -420,7 +411,7 @@
       })
       .catch(error => {
         console.error('Error loading application:', error);
-        alert('Error loading application. Please try again.');
+        window.showAppNotice('Unable to load application details right now. Please refresh and try again.', 'error');
       });
   }
 
@@ -460,7 +451,7 @@
 
     // Coverage info
     document.getElementById('plan_display').textContent = app.plan.replace('_', ' ').toUpperCase();
-    const addons = app.coverage_addons ? JSON.parse(app.coverage_addons) : [];
+    const addons = parseCoverageAddons(app.coverage_addons);
     document.getElementById('addons_display').textContent = addons.length > 0 ? addons.join(', ') : 'None';
     document.getElementById('annual_premium').textContent = `RM ${parseFloat(app.calculated_premium).toFixed(2)}`;
     document.getElementById('monthly_premium').textContent = `RM ${(parseFloat(app.calculated_premium) / 12).toFixed(2)}`;
@@ -472,7 +463,6 @@
     if (app.status === 'submitted') {
       document.getElementById('btn_approve').classList.remove('hidden');
       document.getElementById('btn_reject').classList.remove('hidden');
-      document.getElementById('btn_request').classList.remove('hidden');
     } else if (app.status === 'approved') {
       document.getElementById('status_approved').classList.remove('hidden');
       document.getElementById('approval_date').textContent = `Approved on ${submittedDate}`;
@@ -596,10 +586,6 @@
       title.textContent = 'Reject Application';
       message.textContent = 'Please provide a reason for rejection. The applicant will be notified.';
       confirmBtn.className = 'flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium';
-    } else {
-      title.textContent = 'Request More Information';
-      message.textContent = 'What information do you need from the applicant?';
-      confirmBtn.className = 'flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium';
     }
 
     document.getElementById('modal_notes').value = '';
@@ -614,40 +600,62 @@
   function confirmApproval() {
     const appId = getApplicationId();
     const notes = document.getElementById('modal_notes').value;
-    const endpoint = actionType === 'approve' ? 'approve' : actionType === 'reject' ? 'reject' : 'request_info';
+    const endpoint = actionType === 'approve' ? 'approve' : 'reject';
     
     let body = {};
     if (actionType === 'approve') {
       body = { notes: notes };
     } else if (actionType === 'reject') {
       body = { reason: notes || 'No reason provided' };
-    } else {
-      body = { request: notes };
     }
 
     fetch(`/api/admin/applications/${appId}/${endpoint}/`, {
-      method: 'PATCH',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-CSRFToken': getCookie('csrftoken')
       },
       body: JSON.stringify(body)
     })
-    .then(response => response.json())
-    .then(data => {
-      alert('Action completed successfully!');
+    .then(async response => {
+      if (!response.ok) {
+        const message = await window.parseApiError(response, 'Unable to complete this action.');
+        throw new Error(message);
+      }
+      return response.json();
+    })
+    .then(() => {
+      const successMessage = actionType === 'approve'
+        ? 'Application approved successfully.'
+        : 'Application rejected and applicant notified.';
+      window.showAppNotice(successMessage, 'success');
       closeModal();
       loadApplication();
     })
     .catch(error => {
       console.error('Error:', error);
-      alert('Error performing action. Please try again.');
+      window.showAppNotice(error.message || 'Unable to complete this action right now. Please try again.', 'error');
     });
   }
 
   function saveNotes() {
-    const notes = document.getElementById('internal_notes').value;
-    alert('Notes would be saved. Feature in Phase 2.');
+    window.showAppNotice('Internal notes saving is not yet available in this build.', 'info');
+  }
+
+  function parseCoverageAddons(rawAddons) {
+    if (!rawAddons) return [];
+    if (Array.isArray(rawAddons)) return rawAddons;
+    if (typeof rawAddons === 'object') return Object.keys(rawAddons);
+    if (typeof rawAddons === 'string') {
+      try {
+        const parsed = JSON.parse(rawAddons);
+        if (Array.isArray(parsed)) return parsed;
+        if (parsed && typeof parsed === 'object') return Object.keys(parsed);
+      } catch (_err) {
+        return [];
+      }
+    }
+    return [];
   }
 
   function getCookie(name) {

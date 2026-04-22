@@ -377,9 +377,9 @@ GET /admin/applications/?status=submitted&ordering=-created_at&page=1
 
 ### 8. Approve Application
 
-**PATCH** `/admin/applications/{application_id}/approve/`
+**POST** `/admin/applications/{application_id}/approve/`
 
-**Authentication:** Admin token required
+**Authentication:** None in current deployment (`AllowAny`)
 
 **Request Body:**
 ```json
@@ -391,9 +391,11 @@ GET /admin/applications/?status=submitted&ordering=-created_at&page=1
 **Response (200 OK):**
 ```json
 {
-  "status": "approved",
+  "id": "550e8400-e29b-41d4-a716-446655440000",
   "application_number": "ASP-2026-001234",
-  "message": "Application approved. Confirmation email sent to applicant."
+  "status": "approved",
+  "full_name": "John Doe",
+  "email": "john@example.com"
 }
 ```
 
@@ -407,9 +409,9 @@ GET /admin/applications/?status=submitted&ordering=-created_at&page=1
 
 ### 9. Reject Application
 
-**PATCH** `/admin/applications/{application_id}/reject/`
+**POST** `/admin/applications/{application_id}/reject/`
 
-**Authentication:** Admin token required
+**Authentication:** None in current deployment (`AllowAny`)
 
 **Request Body:**
 ```json
@@ -418,12 +420,16 @@ GET /admin/applications/?status=submitted&ordering=-created_at&page=1
 }
 ```
 
+`reason` is required. Empty values return `400 Bad Request`.
+
 **Response (200 OK):**
 ```json
 {
-  "status": "rejected",
+  "id": "550e8400-e29b-41d4-a716-446655440000",
   "application_number": "ASP-2026-001234",
-  "message": "Application rejected. Notification sent to applicant."
+  "status": "rejected",
+  "full_name": "John Doe",
+  "email": "john@example.com"
 }
 ```
 

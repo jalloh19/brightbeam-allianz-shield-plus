@@ -269,7 +269,7 @@ function validateCheckbox(checked) {
     return { valid: true };
 }
 
-function validatePassportPhotoField(fieldName) {
+function validatePassportPhotoField() {
     /**
      * Validate passport photo field
      * Checks if photo URL has been successfully uploaded
