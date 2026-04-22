@@ -23,7 +23,12 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+    background-color: var(--primary);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--primary-dark);
   }
 
   .btn-primary:disabled {
@@ -35,7 +40,13 @@
   }
 
   .btn-outline {
-    @apply border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply border-2 font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .btn-outline:hover {
+    background-color: #eff6ff;
   }
 
   .form-label {
@@ -90,7 +101,8 @@
   }
 
   .progress-bar-fill {
-    @apply h-full bg-blue-600 transition-all duration-300;
+    @apply h-full transition-all duration-300;
+    background-color: var(--primary);
   }
 
   .step-indicator {
@@ -102,7 +114,8 @@
   }
 
   .step-indicator.active .step-number {
-    @apply bg-blue-600 text-white;
+    @apply text-white;
+    background-color: var(--primary);
   }
 
   .step-indicator.completed .step-number {
@@ -135,11 +148,11 @@
   }
 
   .app-toast-icon {
-    @apply text-sm leading-6 font-bold;
+    @apply text-lg leading-6 font-bold;
   }
 
   .app-toast-message {
-    @apply text-sm text-gray-700 flex-1;
+    @apply text-lg text-gray-700 flex-1;
   }
 
   .app-toast-close {
@@ -147,11 +160,21 @@
   }
 
   .app-toast-info {
-    @apply border-blue-200 bg-blue-50;
+    background-color: #eaf2ff;
+    border-color: rgba(0, 81, 186, 0.35);
   }
 
   .app-toast-info .app-toast-icon {
-    @apply text-blue-600;
+    color: var(--primary);
+  }
+
+  .support-link-btn {
+    @apply block w-full text-white text-2xl font-bold tracking-wide py-4 rounded uppercase transition-colors;
+    background-color: var(--primary);
+  }
+
+  .support-link-btn:hover {
+    background-color: var(--primary-dark);
   }
 
   .app-toast-success {
